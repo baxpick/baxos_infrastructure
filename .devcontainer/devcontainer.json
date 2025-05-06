@@ -7,11 +7,9 @@
 		"FOLDER_ROOT": "${containerWorkspaceFolder}"
 	},
 	
-	"runArgs": ["--env-file",".devcontainer/.env.prod"],
-	
 	"postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
 	
-	"postStartCommand": "./.devcontainer/startup.sh",
+	"postStartCommand": "./.devcontainer/startup.sh prod",
 
 	"customizations": {
 		"vscode": {
