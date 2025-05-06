@@ -1,0 +1,23 @@
+{
+	"name": "MyDevContainer",
+	
+	"dockerFile": "Dockerfile.ubuntu",
+	
+	"containerEnv": {
+		"FOLDER_ROOT": "${containerWorkspaceFolder}"
+	},
+	
+	"runArgs": ["--env-file",".devcontainer/.env.prod"],
+	
+	"postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
+	
+	"postStartCommand": "./.devcontainer/startup.sh",
+
+	"customizations": {
+		"vscode": {
+		  "extensions": [
+			"hashicorp.terraform"
+		  ]
+		}
+	}
+}
