@@ -44,7 +44,8 @@ jobs:
       - name: Set up tfenv and install Terraform
         run: |
           git clone https://github.com/tfutils/tfenv.git ~/.tfenv
-          echo "$HOME/.tfenv/bin" >> $GITHUB_PATH
+          export PATH="$HOME/.tfenv/bin:$PATH" # Add tfenv to PATH for this step
+          echo "$HOME/.tfenv/bin" >> $GITHUB_PATH # Add tfenv to GITHUB_PATH for subsequent steps
           tfenv install $MY_TERRAFORM_VERSION
           tfenv use $MY_TERRAFORM_VERSION
           terraform --version # Verify installation
