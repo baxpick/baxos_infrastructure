@@ -59,5 +59,9 @@ jobs:
         env:
           FOLDER_ROOT: ${{ github.workspace }}
           LOG_VERBOSE: $${{ vars.LOG_VERBOSE }}
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
         run: |
           ./run.sh -e ${{ inputs.environment }} -a ${{ inputs.action }} -p ${{ inputs.projectName }}
