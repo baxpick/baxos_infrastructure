@@ -13,7 +13,8 @@ elif [ -f "${FILE_secrets}" ]; then
     echo "Loading secrets from ${FILE_secrets}..."
 
     cp "${FILE_secrets}" ~/.devcontainer_env
-    grep -q "devcontainer_env" ~/.bashrc || echo 'if [ -f ~/.devcontainer_env ]; then source ~/.devcontainer_env; fi' >> ~/.bashrc
+    # REMARK: set -a and set +a are used to export all variables in the file so that subshells can access them
+    grep -q "devcontainer_env" ~/.bashrc || echo 'if [ -f ~/.devcontainer_env ]; then set -a; source ~/.devcontainer_env; set +a; fi' >> ~/.bashrc
     . ~/.devcontainer_env
 else
     echo "No secrets file found for environment: ${ENVIRONMENT}"

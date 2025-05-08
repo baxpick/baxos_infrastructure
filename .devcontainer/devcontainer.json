@@ -15,7 +15,10 @@
 		"vscode": {
 		  "extensions": [
 			"hashicorp.terraform"
-		  ]
+		  ],
+		  "settings": {
+			"scm.autoDetectGitRepositories": "subFolders"
+		  }
 		}
 	}
 }
