@@ -58,10 +58,6 @@ jobs:
       - name: Execute run.sh
         env:
           FOLDER_ROOT: ${{ github.workspace }}
-          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          LOG_VERBOSE: YES # Optional: for more detailed logs in GitHub Actions
+          LOG_VERBOSE: $${{ vars.LOG_VERBOSE }}
         run: |
           ./run.sh -e ${{ inputs.environment }} -a ${{ inputs.action }} -p ${{ inputs.projectName }}
