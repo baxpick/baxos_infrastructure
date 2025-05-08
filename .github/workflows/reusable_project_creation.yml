@@ -1,0 +1,66 @@
+name: Reusable Project Creation
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment to deploy (dev/prod)'
+        required: true
+        type: string
+      action:
+        description: 'Action to perform (e.g., resourcesCreate, resourcesDelete)'
+        required: true
+        type: string
+      projectName:
+        description: 'Name of the project (corresponds to folder in terraform/projects)'
+        required: true
+        type: string
+    secrets:
+      ARM_CLIENT_ID:
+        required: true
+      ARM_CLIENT_SECRET:
+        required: true
+      ARM_TENANT_ID:
+        required: true
+      ARM_SUBSCRIPTION_ID:
+        required: true
+
+jobs:
+  execute_run_script:
+    runs-on: ubuntu-latest
+    env:
+      MY_TERRAFORM_VERSION: 1.11.4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      # - name: Install dependencies
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install -y git curl
+
+      - name: Set up tfenv and install Terraform
+        run: |
+          git clone https://github.com/tfutils/tfenv.git ~/.tfenv
+          echo "$HOME/.tfenv/bin" >> $GITHUB_PATH
+          tfenv install $MY_TERRAFORM_VERSION
+          tfenv use $MY_TERRAFORM_VERSION
+          terraform --version # Verify installation
+
+      - name: Set up Azure CLI
+        run: |
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+          az --version # Verify installation
+
+      - name: Execute run.sh
+        env:
+          FOLDER_ROOT: ${{ github.workspace }}
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          LOG_VERBOSE: YES # Optional: for more detailed logs in GitHub Actions
+        run: |
+          ./run.sh -e ${{ inputs.environment }} -a ${{ inputs.action }} -p ${{ inputs.projectName }}

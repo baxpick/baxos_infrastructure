@@ -20,23 +20,26 @@ full_cmd=$(ps -o args= -p $$ | sed 's/^ *//')
 log_box "$full_cmd"
 
 usage() {
-    echo "Usage: $0 -e ENVIRONMENT -a ACTION"
+    echo "Usage: $0 -e ENVIRONMENT -a ACTION -p PROJECT_NAME"
     echo "  -e ENVIRONMENT   Environment (dev|prod)"
     echo "  -a ACTION        Action"
     echo "    resourcesCreate   : Create and initialize all resources if needed"
     echo "    resourcesDelete   : Delete all resources"
-
+    echo "  -p PROJECT_NAME  Name of the project (e.g., baxos)"
     exit 1
 }
 
 # parse command line arguments
-while getopts "e:a:h" opt; do
+while getopts "e:a:p:h" opt; do
     case ${opt} in
         e )
             environment=$OPTARG
             ;;
         a )
             action=$OPTARG
+            ;;
+        p )
+            projectName=$OPTARG
             ;;
         h )
             usage
@@ -65,6 +68,12 @@ declare -a VALID_ACTIONS=(\
 [[ " ${VALID_ACTIONS[@]} " =~ " ${action} " ]] || { log_error_no_exit "Invalid action: '${action}'"; usage; }
 log_info "action='${action}'"
 
+log_info "projectName..."
+[[ ! -z "${projectName}" ]] || { log_error_no_exit "Project name not set"; usage; }
+# Basic validation: check if project folder exists
+ensure_folder "${FOLDER_ROOT}/terraform/projects/${projectName}"
+log_info "projectName='${projectName}'"
+
 log_box "SANITY"
 # ##############
 
@@ -79,7 +88,7 @@ log_info "subscription=OK"
 log_box "Prepare variables"
 # #########################
 
-TF_project_folder="${FOLDER_ROOT}/terraform/projects/baxos"
+TF_project_folder="${FOLDER_ROOT}/terraform/projects/${projectName}"
 
 log_info "TF_file_variables..."
 TF_file_variables="${TF_project_folder}/env/${environment}/terraform.tfvars"
@@ -91,6 +100,11 @@ TF_file_variables_backend="${TF_project_folder}/env/${environment}/backend.tfvar
 ensure_file "${TF_file_variables_backend}"
 log_info "TF_file_variables_backend=${TF_file_variables_backend}"
 
+log_info "location..."
+location=$(value_from ${TF_file_variables} location)
+[[ ! -z "${location}" ]] || { log_error "Location not set"; }
+log_info "location=${location}"
+
 log_box "MAIN EXECUTION"
 # ######################
 
@@ -100,8 +114,8 @@ declare -a TERRAFORM_ACTIONS=("resourcesCreate" "resourcesDelete")
 if [[ " ${TERRAFORM_ACTIONS[@]} " =~ " ${action} " ]]; then
 
     terraform_backend_create \
+        --location "${location}" \
         --fileVarsBackend "${TF_file_variables_backend}" \
-        --fileVars "${TF_file_variables}"
 
     terraform_run \
         --folder "${TF_project_folder}" \
