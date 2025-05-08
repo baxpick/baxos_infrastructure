@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'terraform/projects/baxos/**'
-      - '.github/workflows/baxos_create_DEV.yml'
+      - '.github/workflows/baxos_create_PROD.yml'
       - '.github/workflows/reusable_project_creation.yml'
       - 'run.sh'
       #- 'bash/**'
