@@ -7,14 +7,14 @@ on:
     paths:
       - 'terraform/projects/baxos/**'
       - '.github/workflows/baxos_create_PROD.yml'
-      - '.github/workflows/reusable_project_creation.yml'
+      - '.github/workflows/reusable_baxos_create.yml'
       - 'run.sh'
       #- 'bash/**'
   workflow_dispatch: # Allows manual triggering
 
 jobs:
   create_resources:
-    uses: ./.github/workflows/reusable_project_creation.yml
+    uses: ./.github/workflows/reusable_baxos_create.yml
     with:
       environment: prod
       action: resourcesCreate
@@ -24,3 +24,6 @@ jobs:
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET_PROD }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID_PROD }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID_PROD }}
+      BAXOS_SRC_GIT_ROOT_CREDS: ${{ secrets.BAXOS_SRC_GIT_ROOT_CREDS }}
+      BAXOS_SRC_GIT_ROOT: ${{ secrets.BAXOS_SRC_GIT_ROOT }}
+      BAXOS_SRC_GIT_PROJECT_SUFFIX: ${{ secrets.BAXOS_SRC_GIT_PROJECT_SUFFIX }}

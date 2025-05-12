@@ -115,14 +115,15 @@ if [[ " ${TERRAFORM_ACTIONS[@]} " =~ " ${action} " ]]; then
 
     terraform_backend_create \
         --location "${location}" \
-        --fileVarsBackend "${TF_file_variables_backend}" \
+        --fileVarsBackend "${TF_file_variables_backend}"
 
     terraform_run \
         --folder "${TF_project_folder}" \
         --environment "${environment}" \
         --action "${action}" \
         --fileVarsBackend "${TF_file_variables_backend}" \
-        --fileVars "${TF_file_variables}"
+        --fileVars "${TF_file_variables}" \
+        --skipApply "NO"
 
 elif [[ "${action}" == "..." ]]; then
     echo "..."

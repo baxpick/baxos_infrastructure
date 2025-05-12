@@ -24,6 +24,12 @@ on:
         required: true
       ARM_SUBSCRIPTION_ID:
         required: true
+      BAXOS_SRC_GIT_ROOT_CREDS:
+        required: false
+      BAXOS_SRC_GIT_ROOT:
+        required: false
+      BAXOS_SRC_GIT_PROJECT_SUFFIX:
+        required: false
 
 jobs:
   execute_run_script:
@@ -63,5 +69,8 @@ jobs:
           ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
           ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          TF_VAR_baxos_src_git_root_creds: ${{ secrets.BAXOS_SRC_GIT_ROOT_CREDS }}
+          TF_VAR_baxos_src_git_root: ${{ secrets.BAXOS_SRC_GIT_ROOT }}
+          TF_VAR_baxos_src_git_project_suffix: ${{ secrets.BAXOS_SRC_GIT_PROJECT_SUFFIX }}
         run: |
           ./run.sh -e ${{ inputs.environment }} -a ${{ inputs.action }} -p ${{ inputs.projectName }}
