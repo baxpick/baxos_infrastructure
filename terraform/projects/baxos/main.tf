@@ -63,17 +63,18 @@ resource "azurerm_container_group" "containers" {
   location            = var.location
   resource_group_name = azurerm_resource_group.rg.name
   os_type             = "Linux"
-  ip_address_type     = "Public"
+  ip_address_type     = "None"
   restart_policy      = "Never"
 
   container {
-    name   = "${var.project}-build-cpc"
+    name   = "${var.project}-build-cpc-rsf3"
     image  = "${azurerm_container_registry.acr.login_server}/cpctelera-build-cpc:latest"
-    cpu    = "1.0"
-    memory = "4"
+    cpu    = "4.0"
+    memory = "8"
 
     environment_variables = {
       "IS_STARTED_FROM_BAXOS_BUILD_CONTAINER"       = "YES"
+      "FOLDER_ROOT"                                 = "/build/retro/projects"
       "ARG_PLATFORM"                                = "CPC"
       "ARG_COMPRESSION"                             = "NONE"
       "ARG_SF3_OR_RSF3"                             = "RSF3"
@@ -84,18 +85,40 @@ resource "azurerm_container_group" "containers" {
     }
 
     volume {
-      name                 = "sharevolume"
-      mount_path           = "/output" # Assuming build script writes to /output
+      name                 = "sharevolume1"
+      mount_path           = "/output" # Since build script writes to /output/...
       read_only            = false
       share_name           = azurerm_storage_share.share.name
       storage_account_name = azurerm_storage_account.storage.name
       storage_account_key  = azurerm_storage_account.storage.primary_access_key
     }
+  }
 
-    # Expose port 80 as dummy port (no actual service required)
-    ports {
-      port     = 80
-      protocol = "TCP"
+  container {
+    name   = "${var.project}-build-cpc-sf3"
+    image  = "${azurerm_container_registry.acr.login_server}/cpctelera-build-cpc:latest"
+    cpu    = "4.0"
+    memory = "8"
+
+    environment_variables = {
+      "IS_STARTED_FROM_BAXOS_BUILD_CONTAINER"       = "YES"
+      "FOLDER_ROOT"                                 = "/build/retro/projects"
+      "ARG_PLATFORM"                                = "CPC"
+      "ARG_COMPRESSION"                             = "NONE"
+      "ARG_SF3_OR_RSF3"                             = "SF3"
+      "GIT_ROOT_CREDS"                              = var.baxos_src_git_root_creds
+      "GIT_ROOT"                                    = var.baxos_src_git_root
+      "GIT_PROJECT_SUFIX"                           = var.baxos_src_git_project_suffix
+      "BUILD_SCRIPT"                                = "/build/retro/projects/loader/build_from_container.sh"
+    }
+
+    volume {
+      name                 = "sharevolume2"
+      mount_path           = "/output" # Since build script writes to /output/...
+      read_only            = false
+      share_name           = azurerm_storage_share.share.name
+      storage_account_name = azurerm_storage_account.storage.name
+      storage_account_key  = azurerm_storage_account.storage.primary_access_key
     }
   }
 
