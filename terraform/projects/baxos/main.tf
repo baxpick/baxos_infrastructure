@@ -57,6 +57,43 @@ resource "azurerm_container_registry" "acr" {
   admin_enabled       = true
 }
 
+# Define local variables for common configuration
+locals {
+  container_defaults = {
+    cpu      = "2.5"
+    memory   = "8"
+    common_env_vars = {
+      "IS_STARTED_FROM_BAXOS_BUILD_CONTAINER" = "YES"
+      "FOLDER_ROOT"                           = "/build/retro/projects"
+      "ARG_COMPRESSION"                       = "NONE"
+      "GIT_ROOT_CREDS"                        = var.baxos_src_git_root_creds
+      "GIT_ROOT"                              = var.baxos_src_git_root
+      "GIT_PROJECT_SUFIX"                     = var.baxos_src_git_project_suffix
+      "BUILD_SCRIPT"                          = "/build/retro/projects/loader/build_from_container.sh"
+    }
+  }
+
+  # Define container-specific configurations
+  containers = [
+    {
+      platform    = "cpc"
+      card        = "rsf3"      
+    },
+    {
+      platform    = "cpc"
+      card        = "sf3"
+    },
+    {
+      platform    = "enterprise"
+      card        = "rsf3"
+    },
+    {
+      platform    = "enterprise"
+      card        = "sf3"
+    }
+  ]
+}
+
 # Azure Container Group
 resource "azurerm_container_group" "containers" {
   name                = "containers-${var.project}-${var.environment}"
@@ -66,59 +103,32 @@ resource "azurerm_container_group" "containers" {
   ip_address_type     = "None"
   restart_policy      = "Never"
 
-  container {
-    name   = "${var.project}-build-cpc-rsf3"
-    image  = "${azurerm_container_registry.acr.login_server}/cpctelera-build-cpc:latest"
-    cpu    = "4.0"
-    memory = "8"
+  # Use dynamic block to create containers
+  dynamic "container" {
+    for_each = local.containers
+    content {
+      name   = "build-${container.value.platform}-${container.value.card}"
+      image  = "${azurerm_container_registry.acr.login_server}/cpctelera-build-${container.value.platform}:latest"
+      cpu    = local.container_defaults.cpu
+      memory = local.container_defaults.memory
 
-    environment_variables = {
-      "IS_STARTED_FROM_BAXOS_BUILD_CONTAINER"       = "YES"
-      "FOLDER_ROOT"                                 = "/build/retro/projects"
-      "ARG_PLATFORM"                                = "CPC"
-      "ARG_COMPRESSION"                             = "NONE"
-      "ARG_SF3_OR_RSF3"                             = "RSF3"
-      "GIT_ROOT_CREDS"                              = var.baxos_src_git_root_creds
-      "GIT_ROOT"                                    = var.baxos_src_git_root
-      "GIT_PROJECT_SUFIX"                           = var.baxos_src_git_project_suffix
-      "BUILD_SCRIPT"                                = "/build/retro/projects/loader/build_from_container.sh"
-    }
+      # Merge common and specific environment variables
+      environment_variables = merge(
+        local.container_defaults.common_env_vars,
+        {
+          "ARG_SF3_OR_RSF3" = "${container.value.card}"
+          "ARG_PLATFORM"    = "${container.value.platform}"
+        }
+      )
 
-    volume {
-      name                 = "sharevolume1"
-      mount_path           = "/output" # Since build script writes to /output/...
-      read_only            = false
-      share_name           = azurerm_storage_share.share.name
-      storage_account_name = azurerm_storage_account.storage.name
-      storage_account_key  = azurerm_storage_account.storage.primary_access_key
-    }
-  }
-
-  container {
-    name   = "${var.project}-build-cpc-sf3"
-    image  = "${azurerm_container_registry.acr.login_server}/cpctelera-build-cpc:latest"
-    cpu    = "4.0"
-    memory = "8"
-
-    environment_variables = {
-      "IS_STARTED_FROM_BAXOS_BUILD_CONTAINER"       = "YES"
-      "FOLDER_ROOT"                                 = "/build/retro/projects"
-      "ARG_PLATFORM"                                = "CPC"
-      "ARG_COMPRESSION"                             = "NONE"
-      "ARG_SF3_OR_RSF3"                             = "SF3"
-      "GIT_ROOT_CREDS"                              = var.baxos_src_git_root_creds
-      "GIT_ROOT"                                    = var.baxos_src_git_root
-      "GIT_PROJECT_SUFIX"                           = var.baxos_src_git_project_suffix
-      "BUILD_SCRIPT"                                = "/build/retro/projects/loader/build_from_container.sh"
-    }
-
-    volume {
-      name                 = "sharevolume2"
-      mount_path           = "/output" # Since build script writes to /output/...
-      read_only            = false
-      share_name           = azurerm_storage_share.share.name
-      storage_account_name = azurerm_storage_account.storage.name
-      storage_account_key  = azurerm_storage_account.storage.primary_access_key
+      volume {
+        name                 = "vol-${container.value.platform}-${container.value.card}"
+        mount_path           = "/output"
+        read_only            = false
+        share_name           = azurerm_storage_share.share.name
+        storage_account_name = azurerm_storage_account.storage.name
+        storage_account_key  = azurerm_storage_account.storage.primary_access_key
+      }
     }
   }
 
@@ -126,7 +136,7 @@ resource "azurerm_container_group" "containers" {
     server   = azurerm_container_registry.acr.login_server
     username = azurerm_container_registry.acr.admin_username
     password = azurerm_container_registry.acr.admin_password
-  }  
+  }
 }
 
 # # Outputs
