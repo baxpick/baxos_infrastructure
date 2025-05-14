@@ -1,5 +1,5 @@
-### Group for all resorces
-##########################
+# Group for all
+# #############
 
 resource "azurerm_resource_group" "rg" {
   name     = var.rg_all
@@ -7,7 +7,7 @@ resource "azurerm_resource_group" "rg" {
 }
 
 # Storage
-#########
+# #######
 
 # Storage Account
 resource "azurerm_storage_account" "storage" {
@@ -47,7 +47,7 @@ resource "azurerm_storage_share" "share" {
 }
 
 # Containers
-############
+# ##########
 
 resource "azurerm_container_registry" "acr" {
   name                = "acr${var.project}${var.environment}"
@@ -57,50 +57,13 @@ resource "azurerm_container_registry" "acr" {
   admin_enabled       = true
 }
 
-# Define local variables for common configuration
-locals {
-  container_defaults = {
-    cpu      = "2.5"
-    memory   = "8"
-    common_env_vars = {
-      "IS_STARTED_FROM_BAXOS_BUILD_CONTAINER" = "YES"
-      "FOLDER_ROOT"                           = "/build/retro/projects"
-      "ARG_COMPRESSION"                       = "NONE"
-      "GIT_ROOT_CREDS"                        = var.baxos_src_git_root_creds
-      "GIT_ROOT"                              = var.baxos_src_git_root
-      "GIT_PROJECT_SUFIX"                     = var.baxos_src_git_project_suffix
-      "BUILD_SCRIPT"                          = "/build/retro/projects/loader/build_from_container.sh"
-    }
-  }
-
-  # Define container-specific configurations
-  containers = [
-    {
-      platform    = "cpc"
-      card        = "rsf3"      
-    },
-    {
-      platform    = "cpc"
-      card        = "sf3"
-    },
-    {
-      platform    = "enterprise"
-      card        = "rsf3"
-    },
-    {
-      platform    = "enterprise"
-      card        = "sf3"
-    }
-  ]
-}
-
-# Azure Container Group
-resource "azurerm_container_group" "containers" {
-  name                = "containers-${var.project}-${var.environment}"
+# Azure Container Group for Build Containers
+resource "azurerm_container_group" "build-containers" {
+  name                = "build-containers-${var.project}-${var.environment}"
   location            = var.location
   resource_group_name = azurerm_resource_group.rg.name
   os_type             = "Linux"
-  ip_address_type     = "None"
+  ip_address_type     = "None"   # Build containers should not be publicly accessible
   restart_policy      = "Never"
 
   # Use dynamic block to create containers
@@ -139,16 +102,36 @@ resource "azurerm_container_group" "containers" {
   }
 }
 
-# # Outputs
-# output "storage_account_name" {
-#   value = azurerm_storage_account.storage.name
-# }
+# New container group for the web server
+resource "azurerm_container_group" "web_server" {
+  name                = "server-containers-${var.project}-${var.environment}"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.rg.name
+  os_type             = "Linux"
+  ip_address_type     = "Public"
+  dns_name_label      = "server-${var.project}-${var.environment}"
+  restart_policy      = "OnFailure"
+  
+  container {
+    name   = local.web_server.name
+    image  = local.web_server.image
+    cpu    = local.web_server.cpu
+    memory = local.web_server.memory
 
-# output "file_share_url" {
-#   value = azurerm_storage_share.share.url
-# }
+    # Mount the share at the nginx html directory
+    volume {
+      name                 = "nginx-share"
+      mount_path           = "/usr/share/nginx/html"
+      read_only            = true  # Read-only access is sufficient for serving files
+      share_name           = azurerm_storage_share.share.name
+      storage_account_name = azurerm_storage_account.storage.name
+      storage_account_key  = azurerm_storage_account.storage.primary_access_key
+    }
 
-# # Output the Managed Identity ID
-# output "managed_identity_id" {
-#   value = azurerm_user_assigned_identity.sa_identity.id
-# }
+    ports {
+      port     = local.web_server.port
+      protocol = "TCP"
+    }
+  }
+}
+
