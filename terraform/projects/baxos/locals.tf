@@ -11,9 +11,9 @@ locals {
             "IS_STARTED_FROM_BAXOS_BUILD_CONTAINER" = "YES"
             "FOLDER_ROOT"                           = "/build/retro/projects"
             "ARG_COMPRESSION"                       = "NONE"
-            "GIT_ROOT_CREDS"                        = var.baxos_src_git_root_creds
-            "GIT_ROOT"                              = var.baxos_src_git_root
-            "GIT_PROJECT_SUFIX"                     = var.baxos_src_git_project_suffix
+            "GIT_ROOT_CREDS"                        = var.BAXOS_SRC_GIT_ROOT_CREDS
+            "GIT_ROOT"                              = var.BAXOS_SRC_GIT_ROOT
+            "GIT_PROJECT_SUFFIX"                     = var.BAXOS_SRC_GIT_PROJECT_SUFFIX
             "BUILD_SCRIPT"                          = "/build/retro/projects/loader/build_from_container.sh"
         }
     }
