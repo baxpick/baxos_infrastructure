@@ -135,3 +135,11 @@ resource "azurerm_container_group" "web_server" {
   }
 }
 
+# DNS
+# ###
+
+## DNS Zone
+resource "azurerm_dns_zone" "dns_zone" {
+  name                = "osmobits.com"
+  resource_group_name = azurerm_resource_group.rg.name
+}
