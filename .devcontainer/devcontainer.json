@@ -7,7 +7,7 @@
 		"FOLDER_ROOT": "${containerWorkspaceFolder}"
 	},
 	
-	"postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
+	"postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && git submodule sync && git submodule update --init --recursive",
 	
 	"postStartCommand": "./.devcontainer/startup.sh prod",
 
