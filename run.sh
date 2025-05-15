@@ -13,6 +13,8 @@ fi
 export FOLDER_bash="${FOLDER_ROOT}/bash"
 source "${FOLDER_bash}/logging.sh"
 source "${FOLDER_bash}/terraform.sh"
+source "${FOLDER_bash}/azure.sh"
+source "${FOLDER_bash}/aws.sh"
 
 [[ "${LOG_VERBOSE}" == "YES" ]] || { log_warning "NOTE: for more detailed output, export LOG_VERBOSE=YES"; }
 
@@ -78,6 +80,7 @@ log_box "SANITY"
 # ##############
 
 azure_login ${ARM_CLIENT_ID} ${ARM_CLIENT_SECRET} ${ARM_TENANT_ID}
+aws_login ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} ${AWS_DEFAULT_REGION}
 
 log_info "subscription..."
 [[ ! -z "${ARM_SUBSCRIPTION_ID}" ]] || { log_error "Subscription id not set"; }
