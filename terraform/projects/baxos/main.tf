@@ -143,3 +143,31 @@ resource "azurerm_dns_zone" "dns_zone" {
   name                = "osmobits.com"
   resource_group_name = azurerm_resource_group.rg.name
 }
+
+# Invoke AWS script to update Route53 nameservers from Azure DNS Zone
+resource "null_resource" "update_aws_ns" {
+  provisioner "local-exec" {
+    interpreter = ["bash","-c"]
+
+    command = <<-EOF
+      source "${path.cwd}/../../../bash/aws.sh"
+      aws_update_nameservers_from_azure_dns_zone \
+        --domainName "${azurerm_dns_zone.dns_zone.name}" \
+        --awsRegion "${var.aws_default_region}" \
+        --azureDnsZoneRg "${azurerm_resource_group.rg.name}" \
+        --waitForUpdate YES
+    EOF
+  }
+
+  triggers = { always_run = timestamp() }
+}
+
+# Create DNS A record pointing to the web server FQDN
+resource "azurerm_dns_cname_record" "web_server" {
+  name                = "${var.project}"
+  zone_name           = azurerm_dns_zone.dns_zone.name
+  resource_group_name = azurerm_resource_group.rg.name
+  ttl                 = 300
+  record              = azurerm_container_group.web_server.fqdn
+}
+

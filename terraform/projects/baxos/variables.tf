@@ -8,6 +8,12 @@ variable "location" {
 }
 
 # set from .tfvars file
+variable "aws_default_region" {
+  description = "default region for AWS"
+  type = string
+}
+
+# set from .tfvars file
 variable "project" {
   description = "project"
   type = string
@@ -33,7 +39,9 @@ variable "action" {
   description = "Action to perform with terraform"
 }
 
-# set from command line using "-var"
+# set from environment using TF_VAR_... syntax
+# ############################################
+
 # REMARK: this secret variable can also be set in codespaces secrets so it must be uppercase
 variable "BAXOS_SRC_GIT_ROOT_CREDS" {
   description = "baxos source git root with credentials"
@@ -42,7 +50,6 @@ variable "BAXOS_SRC_GIT_ROOT_CREDS" {
   nullable    = false
 }
 
-# set from command line using "-var"
 # REMARK: this secret variable can also be set in codespaces secrets so it must be uppercase
 variable "BAXOS_SRC_GIT_ROOT" {
   description = "baxos source git root"
@@ -50,7 +57,7 @@ variable "BAXOS_SRC_GIT_ROOT" {
   sensitive   = true
   nullable    = false
 }
-# set from command line using "-var"
+
 # REMARK: this secret variable can also be set in codespaces secrets so it must be uppercase
 variable "BAXOS_SRC_GIT_PROJECT_SUFFIX" {
   description = "baxos source git project suffix"
@@ -58,3 +65,4 @@ variable "BAXOS_SRC_GIT_PROJECT_SUFFIX" {
   sensitive   = true
   nullable    = false
 }
+

@@ -79,8 +79,8 @@ log_info "projectName='${projectName}'"
 log_box "SANITY"
 # ##############
 
-azure_login ${ARM_CLIENT_ID} ${ARM_CLIENT_SECRET} ${ARM_TENANT_ID}
-aws_login ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} ${AWS_DEFAULT_REGION}
+azure_login --clientId ${ARM_CLIENT_ID} --clientSecret ${ARM_CLIENT_SECRET} --tenantId ${ARM_TENANT_ID}
+aws_login --accessKeyId ${AWS_ACCESS_KEY_ID} --secretAccessKey ${AWS_SECRET_ACCESS_KEY} --defaultRegion ${AWS_DEFAULT_REGION}
 
 log_info "subscription..."
 [[ ! -z "${ARM_SUBSCRIPTION_ID}" ]] || { log_error "Subscription id not set"; }
@@ -104,7 +104,7 @@ ensure_file "${TF_file_variables_backend}"
 log_info "TF_file_variables_backend=${TF_file_variables_backend}"
 
 log_info "location..."
-location=$(value_from ${TF_file_variables} location)
+location=$(value_from --file ${TF_file_variables} --findKey location)
 [[ ! -z "${location}" ]] || { log_error "Location not set"; }
 log_info "location=${location}"
 
