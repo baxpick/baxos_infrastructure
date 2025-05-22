@@ -43,26 +43,9 @@ variable "action" {
 # ############################################
 
 # REMARK: this secret variable can also be set in codespaces secrets so it must be uppercase
-variable "BAXOS_SRC_GIT_ROOT_CREDS" {
-  description = "baxos source git root with credentials"
+variable "BAXOS_SRC_PROJECT_GIT_REPO" {
+  description = "baxos source git repo with credentials"
   type        = string
   sensitive   = true
   nullable    = false
 }
-
-# REMARK: this secret variable can also be set in codespaces secrets so it must be uppercase
-variable "BAXOS_SRC_GIT_ROOT" {
-  description = "baxos source git root"
-  type        = string
-  sensitive   = true
-  nullable    = false
-}
-
-# REMARK: this secret variable can also be set in codespaces secrets so it must be uppercase
-variable "BAXOS_SRC_GIT_PROJECT_SUFFIX" {
-  description = "baxos source git project suffix"
-  type        = string
-  sensitive   = true
-  nullable    = false
-}
-
