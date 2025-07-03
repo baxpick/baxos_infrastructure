@@ -4,7 +4,7 @@ locals {
     # ##########
 
     # Build container (constants)
-    container_defaults = {
+    build_container_defaults = {
         cpu      = "1.5"
         memory   = "6"
         common_env_vars = {
@@ -18,7 +18,7 @@ locals {
     }
 
     # Build container (container specific values)
-    containers = [
+    build_containers = [
         {
             platform    = "cpc"
             card        = "rsf3"      

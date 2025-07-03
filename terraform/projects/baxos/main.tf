@@ -18,7 +18,7 @@ resource "azurerm_storage_account" "storage" {
   account_replication_type        = "LRS"
   account_kind                    = "StorageV2"
   access_tier                     = "Hot"
-  https_traffic_only_enabled      = true
+  https_traffic_only_enabled      = false
   min_tls_version                 = "TLS1_2"
   allow_nested_items_to_be_public = true
   shared_access_key_enabled       = true # REMARK: must be true so azure container can access it
@@ -68,16 +68,16 @@ resource "azurerm_container_group" "build-containers" {
 
   # Use dynamic block to create containers
   dynamic "container" {
-    for_each = local.containers
+    for_each = local.build_containers
     content {
       name   = "build-${container.value.platform}-${container.value.card}"
       image  = "${azurerm_container_registry.acr.login_server}/cpctelera-build-${container.value.platform}:latest"
-      cpu    = local.container_defaults.cpu
-      memory = local.container_defaults.memory
+      cpu    = local.build_container_defaults.cpu
+      memory = local.build_container_defaults.memory
 
       # Merge common and specific environment variables
       environment_variables = merge(
-        local.container_defaults.common_env_vars,
+        local.build_container_defaults.common_env_vars,
         {
           "ARG_SF3_OR_RSF3" = "${container.value.card}"
           "ARG_PLATFORM"    = "${container.value.platform}"
