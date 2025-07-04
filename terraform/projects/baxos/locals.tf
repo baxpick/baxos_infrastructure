@@ -40,7 +40,7 @@ locals {
     # Web server container config
     web_server = {
         name  = "web-server"
-        image = "mcr.microsoft.com/azurelinux/base/nginx:1.25" 
+        image = "mcr.microsoft.com/azurelinux/base/nginx:1" 
         cpu   = "1.0"
         memory= "2.0"
         port  = 80

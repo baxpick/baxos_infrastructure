@@ -1,6 +1,11 @@
 ENVIRONMENT=${1:-"dev"}
 FILE_secrets=".devcontainer/.env.${ENVIRONMENT}"
 
+# Upgrades
+# ########
+
+az upgrade --yes
+
 # Load secrets
 # ############
 
