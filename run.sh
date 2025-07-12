@@ -12,7 +12,10 @@ fi
 # ########
 export FOLDER_bash="${FOLDER_ROOT}/bash"
 source "${FOLDER_bash}/logging.sh"
-source "${FOLDER_bash}/terraform.sh"
+
+IAAC_TOOL="terraform"
+source "${FOLDER_bash}/iaac.sh"
+
 source "${FOLDER_bash}/azure.sh"
 source "${FOLDER_bash}/aws.sh"
 
