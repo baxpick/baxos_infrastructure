@@ -1,42 +1,70 @@
-# set from .tfvars file
-# #####################
+# Configuration variables set from .tfvars files
+# ################################################
 
-# set from .tfvars file
 variable "location" {
-  description = "location"
-  type = string
+  description = "The Azure region where resources will be deployed"
+  type        = string
+  validation {
+    condition     = can(regex("^[a-z]+[a-z0-9]*$", var.location))
+    error_message = "Location must be a valid Azure region name."
+  }
 }
 
-# set from .tfvars file
 variable "aws_default_region" {
-  description = "default region for AWS"
-  type = string
+  description = "Default AWS region for any AWS resources"
+  type        = string
+  validation {
+    condition     = can(regex("^[a-z0-9-]+$", var.aws_default_region))
+    error_message = "AWS region must be a valid region identifier."
+  }
 }
 
-# set from .tfvars file
 variable "project" {
-  description = "project"
-  type = string
+  description = "Project name used for resource naming and tagging"
+  type        = string
+  validation {
+    condition     = can(regex("^[a-z][a-z0-9]*$", var.project))
+    error_message = "Project name must start with a letter and contain only lowercase letters and numbers."
+  }
 }
 
-# set from .tfvars file
 variable "rg_all" {
-  description = "resource group for all resources"
-  type = string
+  description = "Name of the main resource group containing all project resources"
+  type        = string
+  validation {
+    condition     = can(regex("^[a-zA-Z0-9._-]+$", var.rg_all))
+    error_message = "Resource group name must contain only alphanumeric characters, periods, underscores, and hyphens."
+  }
 }
 
-# set from command line using "-var"
-# ##################################
+# Runtime variables set from command line
+# ########################################
 
-# set from command line using "-var"
 variable "environment" {
-  description = "environment"
-  type = string
+  description = "Deployment environment (dev, prod)"
+  type        = string
+  validation {
+    condition     = var.environment == "dev" || var.environment == "prod"
+    error_message = "Environment must be exactly 'dev' or 'prod'."
+  }
 }
 
-# set from command line using "-var"
 variable "action" {
-  description = "Action to perform with terraform"
+  description = "Action to perform with OpenTofu (resourcesCreate, resourcesDelete, etc.)"
+  type        = string
+  validation {
+    condition     = var.action == "resourcesCreate" || var.action == "resourcesDelete"
+    error_message = "Action must be exactly 'resourcesCreate' or 'resourcesDelete'."
+  }
+}
+
+variable "my_ip" {
+  description = "Your machine IP address (e.g., 192.168.1.100)"
+  type        = string
+  validation {
+    condition     = can(regex("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", var.my_ip))
+    error_message = "IP must be a valid IPv4 address (e.g., 192.168.1.100)."
+  }
 }
 
 # set from environment using TF_VAR_... syntax

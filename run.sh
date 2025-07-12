@@ -111,6 +111,11 @@ location=$(value_from --file ${TF_file_variables} --findKey location)
 [[ ! -z "${location}" ]] || { log_error "Location not set"; }
 log_info "location=${location}"
 
+log_info "my_ip..."
+my_ip=$(curl -s https://ipinfo.io/ip) || { log_error "Can not get ip"; }
+[[ ! -z "${my_ip}" ]] || { log_error "IP not set"; }
+log_info "my_ip=${my_ip}"
+
 log_box "MAIN EXECUTION"
 # ######################
 
@@ -129,8 +134,9 @@ if [[ " ${TERRAFORM_ACTIONS[@]} " =~ " ${action} " ]]; then
         --action "${action}" \
         --fileVarsBackend "${TF_file_variables_backend}" \
         --fileVars "${TF_file_variables}" \
-        --skipApply "NO"
-
+        --skipApply "NO" \
+        --myIp "${my_ip}"
+        
 elif [[ "${action}" == "..." ]]; then
     echo "..."
 else
