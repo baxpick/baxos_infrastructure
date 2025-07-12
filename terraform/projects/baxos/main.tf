@@ -57,50 +57,50 @@ resource "azurerm_container_registry" "acr" {
   admin_enabled       = true
 }
 
-# Azure Container Group for Build Containers
-resource "azurerm_container_group" "build-containers" {
-  name                = "build-containers-${var.project}-${var.environment}"
-  location            = var.location
-  resource_group_name = azurerm_resource_group.rg.name
-  os_type             = "Linux"
-  ip_address_type     = "None"   # Build containers should not be publicly accessible
-  restart_policy      = "Never"
+# # Azure Container Group for Build Containers
+# resource "azurerm_container_group" "build-containers" {
+#   name                = "build-containers-${var.project}-${var.environment}"
+#   location            = var.location
+#   resource_group_name = azurerm_resource_group.rg.name
+#   os_type             = "Linux"
+#   ip_address_type     = "None"   # Build containers should not be publicly accessible
+#   restart_policy      = "Never"
 
-  # Use dynamic block to create containers
-  dynamic "container" {
-    for_each = local.build_containers
-    content {
-      name   = "build-${container.value.platform}-${container.value.card}"
-      image  = "${azurerm_container_registry.acr.login_server}/cpctelera-build-${container.value.platform}:latest"
-      cpu    = local.build_container_defaults.cpu
-      memory = local.build_container_defaults.memory
+#   # Use dynamic block to create containers
+#   dynamic "container" {
+#     for_each = local.build_containers
+#     content {
+#       name   = "build-${container.value.platform}-${container.value.card}"
+#       image  = "${azurerm_container_registry.acr.login_server}/cpctelera-build-${container.value.platform}:latest"
+#       cpu    = local.build_container_defaults.cpu
+#       memory = local.build_container_defaults.memory
 
-      # Merge common and specific environment variables
-      environment_variables = merge(
-        local.build_container_defaults.common_env_vars,
-        {
-          "ARG_SF3_OR_RSF3" = "${container.value.card}"
-          "ARG_PLATFORM"    = "${container.value.platform}"
-        }
-      )
+#       # Merge common and specific environment variables
+#       environment_variables = merge(
+#         local.build_container_defaults.common_env_vars,
+#         {
+#           "ARG_SF3_OR_RSF3" = "${container.value.card}"
+#           "ARG_PLATFORM"    = "${container.value.platform}"
+#         }
+#       )
 
-      volume {
-        name                 = "vol-${container.value.platform}-${container.value.card}"
-        mount_path           = "/output"
-        read_only            = false
-        share_name           = azurerm_storage_share.share.name
-        storage_account_name = azurerm_storage_account.storage.name
-        storage_account_key  = azurerm_storage_account.storage.primary_access_key
-      }
-    }
-  }
+#       volume {
+#         name                 = "vol-${container.value.platform}-${container.value.card}"
+#         mount_path           = "/output"
+#         read_only            = false
+#         share_name           = azurerm_storage_share.share.name
+#         storage_account_name = azurerm_storage_account.storage.name
+#         storage_account_key  = azurerm_storage_account.storage.primary_access_key
+#       }
+#     }
+#   }
 
-  image_registry_credential {
-    server   = azurerm_container_registry.acr.login_server
-    username = azurerm_container_registry.acr.admin_username
-    password = azurerm_container_registry.acr.admin_password
-  }
-}
+#   image_registry_credential {
+#     server   = azurerm_container_registry.acr.login_server
+#     username = azurerm_container_registry.acr.admin_username
+#     password = azurerm_container_registry.acr.admin_password
+#   }
+# }
 
 # New container group for the web server
 resource "azurerm_container_group" "web_server" {
