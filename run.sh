@@ -119,11 +119,11 @@ declare -a TERRAFORM_ACTIONS=("resourcesCreate" "resourcesDelete")
 # terraform related actions
 if [[ " ${TERRAFORM_ACTIONS[@]} " =~ " ${action} " ]]; then
 
-    terraform_backend_create \
+    iaac_backend_create \
         --location "${location}" \
         --fileVarsBackend "${TF_file_variables_backend}"
 
-    terraform_run \
+    iaac_run \
         --folder "${TF_project_folder}" \
         --environment "${environment}" \
         --action "${action}" \
