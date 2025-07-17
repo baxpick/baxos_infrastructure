@@ -2,12 +2,13 @@
 # ################################################
 
 variable "location" {
-  description = "The Azure region where resources will be deployed"
+  description = "The Azure region where all resources will be stored"
   type        = string
-  validation {
-    condition     = can(regex("^[a-z]+[a-z0-9]*$", var.location))
-    error_message = "Location must be a valid Azure region name."
-  }
+}
+
+variable "location_backend" {
+  description = "The Azure region where backend state file will be stored"
+  type        = string
 }
 
 variable "aws_default_region" {

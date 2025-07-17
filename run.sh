@@ -30,12 +30,29 @@ usage() {
     echo "  -a ACTION        Action"
     echo "    resourcesCreate   : Create and initialize all resources if needed"
     echo "    resourcesDelete   : Delete all resources"
-    echo "  -p PROJECT_NAME  Name of the project (e.g., baxos)"
+    echo "  -p PROJECT_NAME  Name of the project"
+    echo "  -s PHASES        IaaC phases to skip (comma-separated)"
+    echo "    backend           : Skip backend-creation phase"
+    echo "    cleanup           : Skip cleanup phase"
+    echo "    init              : Skip init phase"
+    echo "    validate          : Skip validate phase"
+    echo "    open              : Skip resource-open phase"
+    echo "    apply             : Skip apply phase"
+    echo "    close             : Skip resource-close phase"
     exit 1
 }
 
 # parse command line arguments
-while getopts "e:a:p:h" opt; do
+skip_arg=""
+# defaults for skip flags
+skip_backend="NO"
+skip_cleanup="NO"
+skip_init="NO"
+skip_validate="NO"
+skip_open="NO"
+skip_apply="NO"
+skip_close="NO"
+while getopts "e:a:p:s:h" opt; do
     case ${opt} in
         e )
             environment=$OPTARG
@@ -46,11 +63,30 @@ while getopts "e:a:p:h" opt; do
         p )
             projectName=$OPTARG
             ;;
+        s )
+            skip_arg=$OPTARG
+            ;;
         h )
             usage
             ;;
     esac
 done
+# parse skip_arg comma-separated phases
+if [[ -n "$skip_arg" ]]; then
+  IFS=',' read -ra phases <<< "$skip_arg"
+  for phase in "${phases[@]}"; do
+    case "$phase" in
+      backend)   skip_backend="YES";;
+      cleanup)   skip_cleanup="YES";;
+      init)      skip_init="YES";;
+      validate)  skip_validate="YES";;
+      open)      skip_open="YES";;
+      apply)     skip_apply="YES";;
+      close)     skip_close="YES";;
+      *)         log_warning "Unknown skip phase: $phase";;
+    esac
+  done
+fi
 
 log_box "ARGUMENTS (check & set)"
 # ###############################
@@ -106,27 +142,36 @@ TF_file_variables_backend="${TF_project_folder}/env/${environment}/backend.tfvar
 ensure_file "${TF_file_variables_backend}"
 log_info "TF_file_variables_backend=${TF_file_variables_backend}"
 
-log_info "location..."
-location=$(value_from --file ${TF_file_variables} --findKey location)
-[[ ! -z "${location}" ]] || { log_error "Location not set"; }
-log_info "location=${location}"
+log_info "location_backend..."
+location_backend=$(value_from --file ${TF_file_variables} --findKey location_backend)
+[[ ! -z "${location_backend}" ]] || { log_error "Location for backend not set"; }
+log_info "location_backend=${location_backend}"
 
 log_info "my_ip..."
 my_ip=$(curl -s https://ipinfo.io/ip) || { log_error "Can not get ip"; }
 [[ ! -z "${my_ip}" ]] || { log_error "IP not set"; }
 log_info "my_ip=${my_ip}"
 
+log_info "rg_all..."
+rg_all=$(value_from --file ${TF_file_variables} --findKey rg_all)
+[[ ! -z "${rg_all}" ]] || { log_error "rg_all not set"; }
+log_info "rg_all=${rg_all}"
+
 log_box "MAIN EXECUTION"
 # ######################
 
-declare -a TERRAFORM_ACTIONS=("resourcesCreate" "resourcesDelete")
+declare -a TF_ACTIONS=("resourcesCreate" "resourcesDelete")
 
-# terraform related actions
-if [[ " ${TERRAFORM_ACTIONS[@]} " =~ " ${action} " ]]; then
+# iaac related actions
+if [[ " ${TF_ACTIONS[@]} " =~ " ${action} " ]]; then
 
-    iaac_backend_create \
-        --location "${location}" \
-        --fileVarsBackend "${TF_file_variables_backend}"
+    if [[ "${skip_backend}" == "NO" ]]; then
+        iaac_backend_create \
+            --location "${location_backend}" \
+            --fileVarsBackend "${TF_file_variables_backend}"
+    else
+        log_info "Skipping backend creation"
+    fi
 
     iaac_run \
         --folder "${TF_project_folder}" \
@@ -134,9 +179,12 @@ if [[ " ${TERRAFORM_ACTIONS[@]} " =~ " ${action} " ]]; then
         --action "${action}" \
         --fileVarsBackend "${TF_file_variables_backend}" \
         --fileVars "${TF_file_variables}" \
-        --skipApply "NO" \
+        --skipCleanup "${skip_cleanup}" \
+        --skipInit "${skip_init}" \
+        --skipValidate "${skip_validate}" \
+        --skipApply "${skip_apply}" \
         --myIp "${my_ip}"
-        
+
 elif [[ "${action}" == "..." ]]; then
     echo "..."
 else
