@@ -1,24 +1,16 @@
-name: Create Baxos Project Resources
+name: Destroy Baxos Project Resources
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'terraform/projects/baxos/**'
-      - '.github/workflows/baxos_create_PROD.yml'
-      - '.github/workflows/reusable_baxos_create.yml'
-      - 'run.sh'
   schedule:
-    - cron: '0 7 * * *'   # every day at 7 AM GMT to create resources
-  workflow_dispatch: # Allows manual triggering
+    - cron: '0 1 * * *'   # every day at 1 AM GMT to delete resources
+  workflow_dispatch:
 
 jobs:
-  create_resources:
+  destroy_resources:
     uses: ./.github/workflows/reusable_baxos_create.yml
     with:
       environment: prod
-      action: resourcesCreate
+      action: resourcesDelete
       projectName: baxos
     secrets:
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID_PROD }}
