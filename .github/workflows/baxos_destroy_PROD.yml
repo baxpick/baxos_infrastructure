@@ -2,7 +2,7 @@ name: Destroy Baxos Project Resources
 
 on:
   schedule:
-    - cron: '0 1 * * *'   # every day at 1 AM GMT to delete resources
+    - cron: '0 23 * * *'   # every day at 11 PM GMT to delete resources
   workflow_dispatch:
 
 jobs:
