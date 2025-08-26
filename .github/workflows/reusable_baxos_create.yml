@@ -80,9 +80,13 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           TF_VAR_BAXOS_SRC_PROJECT_GIT_REPO: ${{ secrets.BAXOS_SRC_PROJECT_GIT_REPO }}
+          
           GH_TOKEN_TO_SET_SECRETS: ${{ secrets.GH_TOKEN_TO_SET_SECRETS }}
           ACR_REGISTRY_NAME: acr${{ inputs.projectName }}${{ inputs.environment }}
           REPO_FOR_ACR_SECRETS: baxpick/cpctelera_example
         run: |
           ./run.sh -e ${{ inputs.environment }} -a ${{ inputs.action }} -p ${{ inputs.projectName }}
+          export GH_TOKEN_TO_SET_SECRETS
+          export ACR_REGISTRY_NAME
+          export REPO_FOR_ACR_SECRETS
           ./after_run.sh
