@@ -49,7 +49,7 @@ jobs:
       #     sudo apt-get update
       #     sudo apt-get install -y git curl
 
-      - name: Set up tfenv and install Terraform
+      - name: Install terraform
         run: |
           git clone https://github.com/tfutils/tfenv.git ~/.tfenv
           export PATH="$HOME/.tfenv/bin:$PATH" # Add tfenv to PATH for this step
@@ -58,10 +58,15 @@ jobs:
           tfenv use $MY_TERRAFORM_VERSION
           terraform --version # Verify installation
 
-      - name: Set up Azure CLI
+      - name: Install Azure CLI
         run: |
           curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
           az --version # Verify installation
+
+      - name: Install Github CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh
 
       - name: Execute run.sh
         env:
@@ -75,5 +80,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           TF_VAR_BAXOS_SRC_PROJECT_GIT_REPO: ${{ secrets.BAXOS_SRC_PROJECT_GIT_REPO }}
+
+          GH_TOKEN_TO_SET_SECRETS: ${{ secrets.GH_TOKEN_TO_SET_SECRETS }}
         run: |
           ./run.sh -e ${{ inputs.environment }} -a ${{ inputs.action }} -p ${{ inputs.projectName }}
+          ./after_run.sh

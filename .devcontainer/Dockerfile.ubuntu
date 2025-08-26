@@ -28,9 +28,13 @@ RUN tfenv install ${MY_TERRAFORM_VERSION} 2>/dev/null && \
 # azure cli
 RUN apt update && apt install -y curl && curl -sL https://aka.ms/InstallAzureCLIDeb |bash
 
+# aws cli
 RUN apt update && apt install -y curl unzip && curl "https://awscli.amazonaws.com/awscli-exe-linux-$(arch).zip" -o "awscliv2.zip" && \
     unzip awscliv2.zip && \
     ./aws/install
+
+# github cli
+RUN apt update && apt install -y gh
 
 # other
 RUN apt update && apt install -y \
