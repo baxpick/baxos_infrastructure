@@ -32,6 +32,8 @@ on:
         required: true
       BAXOS_SRC_PROJECT_GIT_REPO:
         required: false
+      GH_TOKEN_TO_SET_SECRETS:
+        required: true
 
 jobs:
   execute_run_script:
@@ -86,7 +88,7 @@ jobs:
           REPO_FOR_ACR_SECRETS: baxpick/cpctelera_example
         run: |
           ./run.sh -e ${{ inputs.environment }} -a ${{ inputs.action }} -p ${{ inputs.projectName }}
-          export GH_TOKEN_TO_SET_SECRETS
-          export ACR_REGISTRY_NAME
-          export REPO_FOR_ACR_SECRETS
+          # export GH_TOKEN_TO_SET_SECRETS
+          # export ACR_REGISTRY_NAME
+          # export REPO_FOR_ACR_SECRETS
           ./after_run.sh
