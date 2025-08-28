@@ -9,18 +9,7 @@ az upgrade --yes
 # Load secrets
 # ############
 
-if  [ -n "${ARM_CLIENT_ID}" ] && \
-    [ -n "${ARM_CLIENT_SECRET}" ] && \
-    [ -n "${ARM_TENANT_ID}" ] && \
-    [ -n "${ARM_SUBSCRIPTION_ID}" ] && \
-    \
-    [ -n "${AWS_ACCESS_KEY_ID}" ] && \
-    [ -n "${AWS_SECRET_ACCESS_KEY}" ] && \
-    [ -n "${AWS_DEFAULT_REGION}" ]; then 
-
-    echo "Using pre-configured environment variables"
-
-elif [ -f "${FILE_secrets}" ]; then
+if [ -f "${FILE_secrets}" ]; then
 
     echo "Loading secrets from ${FILE_secrets}..."
 

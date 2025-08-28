@@ -14,9 +14,8 @@
 **/.terraform.lock.hcl
 **/.terraform
 
-**/dev.plan
-**/prod.plan
-**/temp.plan
+#**/*.plan
+#**/*.plan.json
 
 # credentials
 # ###########

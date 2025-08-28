@@ -39,6 +39,8 @@ usage() {
     echo "    open              : Skip resource-open phase"
     echo "    apply             : Skip apply phase"
     echo "    close             : Skip resource-close phase"
+    echo "  -B BEFORE_SCRIPT    : Optional script to run before main execution"
+    echo "  -A AFTER_SCRIPT     : Optional script to run after main execution"
     exit 1
 }
 
@@ -52,7 +54,7 @@ skip_validate="NO"
 skip_open="NO"
 skip_apply="NO"
 skip_close="NO"
-while getopts "e:a:p:s:h" opt; do
+while getopts "e:a:p:s:B:A:h" opt; do
     case ${opt} in
         e )
             environment=$OPTARG
@@ -65,6 +67,12 @@ while getopts "e:a:p:s:h" opt; do
             ;;
         s )
             skip_arg=$OPTARG
+            ;;
+        B )
+            before_script=$OPTARG
+            ;;
+        A )
+            after_script=$OPTARG
             ;;
         h )
             usage
@@ -160,6 +168,13 @@ log_info "rg_all=${rg_all}"
 log_box "MAIN EXECUTION"
 # ######################
 
+# run pre-execution script if provided
+if [[ -n "${before_script}" ]]; then
+    log_box "Running pre-execution script: ${before_script}"
+    [[ -x "${before_script}" ]] || log_error "Pre-exec script not executable/found: ${before_script}"
+    "${before_script}"
+fi
+
 declare -a TF_ACTIONS=("resourcesCreate" "resourcesDelete")
 
 # iaac related actions
@@ -189,4 +204,11 @@ elif [[ "${action}" == "..." ]]; then
     echo "..."
 else
     usage
+fi
+
+# run post-execution script if provided
+if [[ -n "${after_script}" ]]; then
+    log_box "Running post-execution script: ${after_script}"
+    [[ -x "${after_script}" ]] || log_error "Post-exec script not executable/found: ${after_script}"
+    "${after_script}"
 fi
