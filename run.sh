@@ -96,7 +96,7 @@ if [[ -n "$skip_arg" ]]; then
   done
 fi
 
-log_box "ARGUMENTS (check & set)"
+log_title "ARGUMENTS (check & set)"
 # ###############################
 
 log_info "environment..."
@@ -123,8 +123,11 @@ log_info "projectName..."
 ensure_folder "${FOLDER_ROOT}/terraform/projects/${projectName}"
 log_info "projectName='${projectName}'"
 
-log_box "SANITY"
-# ##############
+log_info "skip..."
+log_info "skip='${skip_arg}'"
+
+log_title "SANITY"
+# ################
 
 azure_login --clientId ${ARM_CLIENT_ID} --clientSecret ${ARM_CLIENT_SECRET} --tenantId ${ARM_TENANT_ID}
 aws_login --accessKeyId ${AWS_ACCESS_KEY_ID} --secretAccessKey ${AWS_SECRET_ACCESS_KEY} --defaultRegion ${AWS_DEFAULT_REGION}
@@ -135,8 +138,8 @@ subscriptionId=$(az account show --query id --output tsv)
 [[ "${subscriptionId}" == "${ARM_SUBSCRIPTION_ID}" ]] || { errorout "Logged to wrong subscription"; }
 log_info "subscription=OK"
 
-log_box "Prepare variables"
-# #########################
+log_title "Prepare variables"
+# ###########################
 
 TF_project_folder="${FOLDER_ROOT}/terraform/projects/${projectName}"
 
@@ -165,8 +168,18 @@ rg_all=$(value_from --file ${TF_file_variables} --findKey rg_all)
 [[ ! -z "${rg_all}" ]] || { log_error "rg_all not set"; }
 log_info "rg_all=${rg_all}"
 
-log_box "MAIN EXECUTION"
-# ######################
+log_title "EXPORT VARIABLES"
+# ##########################
+
+export_vars=(environment action projectName)
+
+for v in "${export_vars[@]}"; do
+  log_info "export ${v}"
+  export "${v}"
+done
+
+log_title "MAIN EXECUTION"
+# ########################
 
 # run pre-execution script if provided
 if [[ -n "${before_script}" ]]; then

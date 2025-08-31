@@ -87,8 +87,8 @@ jobs:
           ACR_REGISTRY_NAME: acr${{ inputs.projectName }}${{ inputs.environment }}
           REPO_FOR_ACR_SECRETS: baxpick/cpctelera_example
         run: |
-          ./run.sh -e ${{ inputs.environment }} -a ${{ inputs.action }} -p ${{ inputs.projectName }}
-          # export GH_TOKEN_TO_SET_SECRETS
-          # export ACR_REGISTRY_NAME
-          # export REPO_FOR_ACR_SECRETS
-          ./after_run.sh
+          ./run.sh \
+            -e ${{ inputs.environment }} \
+            -a ${{ inputs.action }} \
+            -p ${{ inputs.projectName }} \
+            -A "$(pwd)/after_run.sh"
