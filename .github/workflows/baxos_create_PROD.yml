@@ -20,6 +20,7 @@ jobs:
       environment: prod
       action: resourcesCreate
       projectName: baxos
+      additionalArgs: "-A ./after_run.sh"
     secrets:
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID_PROD }}
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET_PROD }}

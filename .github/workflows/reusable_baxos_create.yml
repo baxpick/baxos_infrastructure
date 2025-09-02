@@ -15,6 +15,11 @@ on:
         description: 'Name of the project (corresponds to folder in terraform/projects)'
         required: true
         type: string
+      additionalArgs:
+        description: 'Optional extra arguments for run.sh (e.g. -A /path/to/script)'
+        required: false
+        type: string
+        default: ""
     secrets:
       ARM_CLIENT_ID:
         required: true
@@ -82,7 +87,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           TF_VAR_BAXOS_SRC_PROJECT_GIT_REPO: ${{ secrets.BAXOS_SRC_PROJECT_GIT_REPO }}
-          
           GH_TOKEN_TO_SET_SECRETS: ${{ secrets.GH_TOKEN_TO_SET_SECRETS }}
           ACR_REGISTRY_NAME: acr${{ inputs.projectName }}${{ inputs.environment }}
           REPO_FOR_ACR_SECRETS: baxpick/cpctelera_example
@@ -91,4 +95,4 @@ jobs:
             -e ${{ inputs.environment }} \
             -a ${{ inputs.action }} \
             -p ${{ inputs.projectName }} \
-            -A "$(pwd)/after_run.sh"
+            ${{ inputs.additionalArgs }}
