@@ -33,7 +33,7 @@ on:
       BAXOS_SRC_PROJECT_GIT_REPO:
         required: false
       GH_TOKEN_TO_SET_SECRETS:
-        required: true
+        required: false
 
 jobs:
   execute_run_script:
