@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# When ACR is changed or created, credentials should be updated in:
+#  - GitHub secrets (for workflows that push/pull images)
+#  - Azure DevOps secret pipeline variables (for pipelines that push/pull images)
+
 # absolute path to root folder
 if [[ "${FOLDER_ROOT}" == "" ]]; then
     echo "FOLDER_ROOT not set"
@@ -15,26 +19,76 @@ source "${FOLDER_bash}/azure.sh"
 usage() {
     echo "Usage: $0"
     echo "  Make sure these environment variables are set:"
-    echo "      GH_TOKEN_TO_SET_SECRETS : GitHub token to set secrets for actions"
-    echo "      ACR_REGISTRY_NAME       : Full name of Azure Container Registry"
-    echo "      REPO_FOR_ACR_SECRETS    : Repo where ACR secrets will be stored (e.g., baxpick/cpctelera_example)"
+    echo "      ACR_REGISTRY_NAME                   : Full name of Azure Container Registry"
+
+    echo "      GH_TOKEN                            : GitHub token (for setting repo secrets, starting actions, ...)"
+    echo "      GH_REPO                             : Repo where ACR pass will be stored, actions started, ... (e.g., baxpick/cpctelera_example)"
+
+    echo "      AZDO_TOKEN                          : Azure DevOps token (for setting pipeline variables, starting pipelines, ...)"
+    echo "      AZDO_PIPELINE_ORGANIZATION          : Azure DevOps pipeline for setting pipeline variables, starting, ... (organization)"
+    echo "      AZDO_PIPELINE_PROJECT               : Azure DevOps pipeline for setting pipeline variables, starting, ... (project)"
+    echo "      AZDO_PIPELINE_NAME                  : Azure DevOps pipeline for setting pipeline variables, starting, ... (name)"
     exit 1
+}
+
+# functions
+# #########
+
+# Set or create an Azure DevOps pipeline variable
+function azdo_pipeline_var() {
+    local var_name=$1
+    local var_value=$2
+    local var_pipeline_id=$3
+
+    log_info "Setting AZDO var '${var_name}'"
+
+    az pipelines variable update \
+        --pipeline-id "${var_pipeline_id}" \
+        --name "${var_name}" \
+        --value "${var_value}" \
+        --allow-override true \
+        --secret true >/dev/null 2>&1 \
+    || \
+    az pipelines variable create \
+        --pipeline-id "${var_pipeline_id}" \
+        --name "${var_name}" \
+        --value "${var_value}" \
+        --allow-override true \
+        --secret true >/dev/null 2>&1
+
+    [[ $? -eq 0 ]] || { log_error "Setting AZDO var '${var_name}' failed"; }
 }
 
 log_subtitle "ARGUMENTS (check & set)"
 # ####################################
 
-log_info "GH_TOKEN_TO_SET_SECRETS..."
-[[ ! -z "${GH_TOKEN_TO_SET_SECRETS}" ]] || { log_error_no_exit "GH_TOKEN_TO_SET_SECRETS not set"; usage; }
-log_info "GH_TOKEN_TO_SET_SECRETS='***'"
-
 log_info "ACR_REGISTRY_NAME..."
 [[ ! -z "${ACR_REGISTRY_NAME}" ]] || { log_error_no_exit "ACR_REGISTRY_NAME not set"; usage; }
 log_info "ACR_REGISTRY_NAME='***'"
 
-log_info "REPO_FOR_ACR_SECRETS..."
-[[ ! -z "${REPO_FOR_ACR_SECRETS}" ]] || { log_error_no_exit "REPO_FOR_ACR_SECRETS not set"; usage; }
-log_info "REPO_FOR_ACR_SECRETS='${REPO_FOR_ACR_SECRETS}'"
+log_info "GH_TOKEN..."
+[[ ! -z "${GH_TOKEN}" ]] || { log_error_no_exit "GH_TOKEN not set"; usage; }
+log_info "GH_TOKEN='***'"
+
+log_info "GH_REPO..."
+[[ ! -z "${GH_REPO}" ]] || { log_error_no_exit "GH_REPO not set"; usage; }
+log_info "GH_REPO='${GH_REPO}'"
+
+log_info "AZDO_TOKEN..."
+[[ ! -z "${AZDO_TOKEN}" ]] || { log_error_no_exit "AZDO_TOKEN not set"; usage; }
+log_info "AZDO_TOKEN='***'"
+
+log_info "AZDO_PIPELINE_ORGANIZATION..."
+[[ ! -z "${AZDO_PIPELINE_ORGANIZATION}" ]] || { log_error_no_exit "AZDO_PIPELINE_ORGANIZATION not set"; usage; }
+log_info "AZDO_PIPELINE_ORGANIZATION='***'"
+
+log_info "AZDO_PIPELINE_PROJECT..."
+[[ ! -z "${AZDO_PIPELINE_PROJECT}" ]] || { log_error_no_exit "AZDO_PIPELINE_PROJECT not set"; usage; }
+log_info "AZDO_PIPELINE_PROJECT='***'"
+
+log_info "AZDO_PIPELINE_NAME..."
+[[ ! -z "${AZDO_PIPELINE_NAME}" ]] || { log_error_no_exit "AZDO_PIPELINE_NAME not set"; usage; }
+log_info "AZDO_PIPELINE_NAME='***'"
 
 log_subtitle "SANITY"
 # ###################
@@ -62,17 +116,28 @@ log_subtitle "MAIN EXECUTION"
 ensure_command gh
 
 log_info "Github login..."
-echo "${GH_TOKEN_TO_SET_SECRETS}" |run gh auth login --hostname github.com --with-token
+echo "${GH_TOKEN}" |run gh auth login --hostname github.com --with-token
 run gh auth status
 log_info "Github login is successfull"
 
 log_info "Setting Github secrets..."
-gh secret set ACR_USERNAME --repo "${REPO_FOR_ACR_SECRETS}" --body "${ACR_REGISTRY_USER}" && \
-gh secret set ACR_PASSWORD --repo "${REPO_FOR_ACR_SECRETS}" --body "${ACR_REGISTRY_PASS}"
+gh secret set ACR_USERNAME --repo "${GH_REPO}" --body "${ACR_REGISTRY_USER}" >/dev/null 2>&1 && \
+gh secret set ACR_PASSWORD --repo "${GH_REPO}" --body "${ACR_REGISTRY_PASS}" >/dev/null 2>&1
 [[ $? -eq 0 ]] || { log_error "Setting Github secrets failed"; }
 log_info "Setting Github secrets is successfull"
 
-log_info "Triggering Docker build/push workflows"
-run gh workflow run docker-build-push-cpc.yml --repo "${REPO_FOR_ACR_SECRETS}" --ref main
-run gh workflow run docker-build-push-enterprise.yml --repo "${REPO_FOR_ACR_SECRETS}" --ref main
-log_info "Docker build/push workflows triggered"
+log_info "Triggering GitHub workflows..."
+run gh workflow run docker-build-push-cpc.yml --repo "${GH_REPO}" --ref main
+run gh workflow run docker-build-push-enterprise.yml --repo "${GH_REPO}" --ref main
+log_info "Triggering GitHub workflows is successfull"
+
+log_info "Updating Azure DevOps pipeline variables..."
+ensure_command az
+export AZURE_DEVOPS_EXT_PAT="${AZDO_TOKEN}"
+az devops configure --defaults organization="${AZDO_PIPELINE_ORGANIZATION}" project="${AZDO_PIPELINE_PROJECT}"
+PIPELINE_ID=$(az pipelines show --name "${AZDO_PIPELINE_NAME}" --query id -o tsv)
+[[ -n "${PIPELINE_ID}" ]] || { log_error "Could not resolve pipeline ID"; exit 1; }
+log_info "Pipeline ID='***'"
+azdo_pipeline_var "vPip_ACR_USER" "${ACR_REGISTRY_USER}" "${PIPELINE_ID}"
+azdo_pipeline_var "vPip_ACR_PASSWORD" "${ACR_REGISTRY_PASS}" "${PIPELINE_ID}"
+log_info "Updating Azure DevOps pipeline variables is successfull"

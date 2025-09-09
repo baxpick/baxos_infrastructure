@@ -7,6 +7,10 @@ on:
         description: 'Environment to deploy (dev/prod)'
         required: true
         type: string
+      environmentUppercase:
+        description: 'Environment to deploy but uppercase (DEV/PROD)'
+        required: true
+        type: string
       action:
         description: 'Action to perform (e.g., resourcesCreate, resourcesDelete)'
         required: true
@@ -37,7 +41,17 @@ on:
         required: true
       BAXOS_SRC_PROJECT_GIT_REPO:
         required: false
-      GH_TOKEN_TO_SET_SECRETS:
+      ACR_REGISTRY_NAME:
+        required: false
+      GH_TOKEN:
+        required: false
+      AZDO_TOKEN:
+        required: false
+      AZDO_PIPELINE_ORGANIZATION:
+        required: false
+      AZDO_PIPELINE_PROJECT:
+        required: false
+      AZDO_PIPELINE_NAME:
         required: false
 
 jobs:
@@ -63,12 +77,13 @@ jobs:
           echo "$HOME/.tfenv/bin" >> $GITHUB_PATH # Add tfenv to GITHUB_PATH for subsequent steps
           tfenv install $MY_TERRAFORM_VERSION
           tfenv use $MY_TERRAFORM_VERSION
-          terraform --version # Verify installation
+          terraform --version
 
       - name: Install Azure CLI
         run: |
-          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-          az --version # Verify installation
+          curl -sL https://aka.ms/InstallAzureCLIDeb |sudo bash
+          az --version
+          az extension add --name azure-devops || true
 
       - name: Install Github CLI
         run: |
@@ -87,9 +102,16 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           TF_VAR_BAXOS_SRC_PROJECT_GIT_REPO: ${{ secrets.BAXOS_SRC_PROJECT_GIT_REPO }}
-          GH_TOKEN_TO_SET_SECRETS: ${{ secrets.GH_TOKEN_TO_SET_SECRETS }}
-          ACR_REGISTRY_NAME: acr${{ inputs.projectName }}${{ inputs.environment }}
-          REPO_FOR_ACR_SECRETS: baxpick/cpctelera_example
+
+          ACR_REGISTRY_NAME: ${{ secrets[ format('ACR_REGISTRY_NAME_{0}', inputs.environmentUppercase) ] }}
+
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_REPO: baxpick/cpctelera_example
+
+          AZDO_TOKEN: ${{ secrets.AZDO_TOKEN }}
+          AZDO_PIPELINE_ORGANIZATION: ${{ secrets.AZDO_PIPELINE_ORGANIZATION }}
+          AZDO_PIPELINE_PROJECT: ${{ secrets.AZDO_PIPELINE_PROJECT }}
+          AZDO_PIPELINE_NAME: ${{ secrets.AZDO_PIPELINE_NAME }}
         run: |
           ./run.sh \
             -e ${{ inputs.environment }} \

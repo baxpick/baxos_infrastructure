@@ -18,6 +18,7 @@ jobs:
     uses: ./.github/workflows/reusable_baxos_create.yml
     with:
       environment: prod
+      environmentUppercase: PROD
       action: resourcesCreate
       projectName: baxos
       additionalArgs: "-A ./after_run.sh"
@@ -30,5 +31,12 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
       BAXOS_SRC_PROJECT_GIT_REPO: ${{ secrets.BAXOS_SRC_PROJECT_GIT_REPO }}
-      GH_TOKEN_TO_SET_SECRETS: ${{ secrets.GH_TOKEN_TO_SET_SECRETS }}
 
+      ACR_REGISTRY_NAME: ${{ secrets.ACR_REGISTRY_NAME }}
+
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      
+      AZDO_TOKEN: ${{ secrets.AZDO_TOKEN }}
+      AZDO_PIPELINE_ORGANIZATION: ${{ secrets.AZDO_PIPELINE_ORGANIZATION }}
+      AZDO_PIPELINE_PROJECT: ${{ secrets.AZDO_PIPELINE_PROJECT }}
+      AZDO_PIPELINE_NAME: ${{ secrets.AZDO_PIPELINE_NAME }}
