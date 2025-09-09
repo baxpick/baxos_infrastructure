@@ -9,6 +9,8 @@ on:
       - '.github/workflows/baxos_create_PROD.yml'
       - '.github/workflows/reusable_baxos_create.yml'
       - 'run.sh'
+      - 'after_run.sh'
+      - 'after_run_when_acr_changed.sh'
   schedule:
     - cron: '0 7 * * *'   # every day at 7 AM GMT to create resources
   workflow_dispatch: # Allows manual triggering
