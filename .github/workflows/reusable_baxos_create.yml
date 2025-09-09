@@ -103,7 +103,7 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           TF_VAR_BAXOS_SRC_PROJECT_GIT_REPO: ${{ secrets.BAXOS_SRC_PROJECT_GIT_REPO }}
 
-          ACR_REGISTRY_NAME: ${{ secrets[ format('ACR_REGISTRY_NAME_{0}', inputs.environmentUppercase) ] }}
+          ACR_REGISTRY_NAME: ${{ secrets.ACR_REGISTRY_NAME }}
 
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_REPO: baxpick/cpctelera_example

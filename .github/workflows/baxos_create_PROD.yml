@@ -32,7 +32,7 @@ jobs:
       AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
       BAXOS_SRC_PROJECT_GIT_REPO: ${{ secrets.BAXOS_SRC_PROJECT_GIT_REPO }}
 
-      ACR_REGISTRY_NAME: ${{ secrets.ACR_REGISTRY_NAME }}
+      ACR_REGISTRY_NAME: ${{ secrets.ACR_REGISTRY_NAME_PROD }}
 
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       
