@@ -15,6 +15,8 @@ fi
 export FOLDER_bash="${FOLDER_ROOT}/bash"
 source "${FOLDER_bash}/logging.sh"
 source "${FOLDER_bash}/azure.sh"
+source "${FOLDER_bash}/azdo.sh"
+source "${FOLDER_bash}/gh.sh"
 
 usage() {
     echo "Usage: $0"
@@ -29,34 +31,6 @@ usage() {
     echo "      AZDO_PIPELINE_PROJECT               : Azure DevOps pipeline for setting pipeline variables, starting, ... (project)"
     echo "      AZDO_PIPELINE_NAME                  : Azure DevOps pipeline for setting pipeline variables, starting, ... (name)"
     exit 1
-}
-
-# functions
-# #########
-
-# Set or create an Azure DevOps pipeline variable
-function azdo_pipeline_var() {
-    local var_name=$1
-    local var_value=$2
-    local var_pipeline_id=$3
-
-    log_info "Setting AZDO var '${var_name}'"
-
-    az pipelines variable update \
-        --pipeline-id "${var_pipeline_id}" \
-        --name "${var_name}" \
-        --value "${var_value}" \
-        --allow-override true \
-        --secret true >/dev/null 2>&1 \
-    || \
-    az pipelines variable create \
-        --pipeline-id "${var_pipeline_id}" \
-        --name "${var_name}" \
-        --value "${var_value}" \
-        --allow-override true \
-        --secret true >/dev/null 2>&1
-
-    [[ $? -eq 0 ]] || { log_error "Setting AZDO var '${var_name}' failed"; }
 }
 
 log_subtitle "ARGUMENTS (check & set)"
@@ -113,31 +87,19 @@ log_info "ACR_REGISTRY_PASS='***'"
 log_subtitle "MAIN EXECUTION"
 # ###########################
 
-ensure_command gh
+gh_login --pat "${GH_TOKEN}"
 
-log_info "Github login..."
-echo "${GH_TOKEN}" |run gh auth login --hostname github.com --with-token
-run gh auth status
-log_info "Github login is successfull"
+# GitHub : set secret repo variables
+gh_repo_set_var --name ACR_USERNAME --value "${ACR_REGISTRY_USER}" --repo "${GH_REPO}"
+gh_repo_set_var --name ACR_PASSWORD --value "${ACR_REGISTRY_PASS}" --repo "${GH_REPO}"
 
-log_info "Setting Github secrets..."
-gh secret set ACR_USERNAME --repo "${GH_REPO}" --body "${ACR_REGISTRY_USER}" >/dev/null 2>&1 && \
-gh secret set ACR_PASSWORD --repo "${GH_REPO}" --body "${ACR_REGISTRY_PASS}" >/dev/null 2>&1
-[[ $? -eq 0 ]] || { log_error "Setting Github secrets failed"; }
-log_info "Setting Github secrets is successfull"
-
-log_info "Triggering GitHub workflows..."
+# GitHub : trigger workflows
 run gh workflow run docker-build-push-cpc.yml --repo "${GH_REPO}" --ref main
 run gh workflow run docker-build-push-enterprise.yml --repo "${GH_REPO}" --ref main
-log_info "Triggering GitHub workflows is successfull"
 
-log_info "Updating Azure DevOps pipeline variables..."
-ensure_command az
-export AZURE_DEVOPS_EXT_PAT="${AZDO_TOKEN}"
-az devops configure --defaults organization="${AZDO_PIPELINE_ORGANIZATION}" project="${AZDO_PIPELINE_PROJECT}"
+# Azure DevOps : set secret pipeline variables
+azdo_login --pat "${AZDO_TOKEN}" --organization "${AZDO_PIPELINE_ORGANIZATION}" --project "${AZDO_PIPELINE_PROJECT}"
 PIPELINE_ID=$(az pipelines show --name "${AZDO_PIPELINE_NAME}" --query id -o tsv)
 [[ -n "${PIPELINE_ID}" ]] || { log_error "Could not resolve pipeline ID"; exit 1; }
-log_info "Pipeline ID='***'"
-azdo_pipeline_var "vPip_ACR_USER" "${ACR_REGISTRY_USER}" "${PIPELINE_ID}"
-azdo_pipeline_var "vPip_ACR_PASSWORD" "${ACR_REGISTRY_PASS}" "${PIPELINE_ID}"
-log_info "Updating Azure DevOps pipeline variables is successfull"
+azdo_pipeline_set_var --name "vPip_ACR_USER" --value "${ACR_REGISTRY_USER}" --pipeline-id "${PIPELINE_ID}"
+azdo_pipeline_set_var --name "vPip_ACR_PASSWORD" --value "${ACR_REGISTRY_PASS}" --pipeline-id "${PIPELINE_ID}"

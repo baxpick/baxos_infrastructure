@@ -1,3 +1,5 @@
 {
-    "scm.autoDetectGitRepositories": "subFolders"
+    "scm.autoDetectGitRepositories": "subFolders",
+    "git.autoRepositoryDetection": true,
+    "git.detectSubmodules": true  
 }
