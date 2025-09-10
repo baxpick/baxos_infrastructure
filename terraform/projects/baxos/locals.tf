@@ -5,8 +5,8 @@ locals {
 
     # Build container (constants)
     build_container_defaults = {
-        cpu      = "1.5"
-        memory   = "6"
+        cpu      = "0.5"
+        memory   = "1"
         common_env_vars = {
             "IS_STARTED_FROM_BAXOS_BUILD_CONTAINER" = "YES"
             "FOLDER_ROOT"                           = "/build/retro/projects"

@@ -57,50 +57,89 @@ resource "azurerm_container_registry" "acr" {
   admin_enabled       = true
 }
 
-# # Azure Container Group for Build Containers
-# resource "azurerm_container_group" "build-containers" {
-#   name                = "build-containers-${var.project}-${var.environment}"
-#   location            = var.location
-#   resource_group_name = azurerm_resource_group.rg.name
-#   os_type             = "Linux"
-#   ip_address_type     = "None"   # Build containers should not be publicly accessible
-#   restart_policy      = "Never"
+# Serverless build orchestration with Container Apps Job
+resource "azurerm_container_app_environment" "build_env" {
+  name                = "env-${var.project}-${var.environment}"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.rg.name
+}
 
-#   # Use dynamic block to create containers
-#   dynamic "container" {
-#     for_each = local.build_containers
-#     content {
-#       name   = "build-${container.value.platform}-${container.value.card}"
-#       image  = "${azurerm_container_registry.acr.login_server}/cpctelera-build-${container.value.platform}:latest"
-#       cpu    = local.build_container_defaults.cpu
-#       memory = local.build_container_defaults.memory
+resource "azurerm_container_app_environment_storage" "build" {
+  name                         = "build"
+  container_app_environment_id = azurerm_container_app_environment.build_env.id
+  account_name                 = azurerm_storage_account.storage.name
+  share_name                   = azurerm_storage_share.share.name
+  access_key                   = azurerm_storage_account.storage.primary_access_key
+  access_mode                  = "ReadWrite"
+}
 
-#       # Merge common and specific environment variables
-#       environment_variables = merge(
-#         local.build_container_defaults.common_env_vars,
-#         {
-#           "ARG_SF3_OR_RSF3" = "${container.value.card}"
-#           "ARG_PLATFORM"    = "${container.value.platform}"
-#         }
-#       )
+resource "azurerm_container_app_job" "build_jobs" {
+  for_each                     = { for idx, cfg in local.build_containers : idx => cfg }
 
-#       volume {
-#         name                 = "vol-${container.value.platform}-${container.value.card}"
-#         mount_path           = "/output"
-#         read_only            = false
-#         share_name           = azurerm_storage_share.share.name
-#         storage_account_name = azurerm_storage_account.storage.name
-#         storage_account_key  = azurerm_storage_account.storage.primary_access_key
-#       }
-#     }
-#   }
+  name                         = "build-${each.value.platform}-${each.value.card}-${var.environment}"
+  location                     = var.location
+  resource_group_name          = azurerm_resource_group.rg.name
+  container_app_environment_id = azurerm_container_app_environment.build_env.id
 
-#   image_registry_credential {
-#     server   = azurerm_container_registry.acr.login_server
-#     username = azurerm_container_registry.acr.admin_username
-#     password = azurerm_container_registry.acr.admin_password
-#   }
-# }
+  replica_timeout_in_seconds = 600
+  replica_retry_limit        = 0
+  manual_trigger_config {
+    parallelism              = 1
+    replica_completion_count = 1
+  }
+
+  secret {
+    name  = "acr-password"
+    value = azurerm_container_registry.acr.admin_password
+  }
+
+  registry {
+    server = azurerm_container_registry.acr.login_server
+    username = azurerm_container_registry.acr.admin_username
+    password_secret_name = "acr-password"
+  }
+
+  template {
+
+    container {
+      image   = "${azurerm_container_registry.acr.login_server}/cpctelera-build-${each.value.platform}:latest"
+      name    = "build"
+      cpu     = tonumber(local.build_container_defaults.cpu)
+      memory  = "${local.build_container_defaults.memory}Gi"
+
+      volume_mounts {
+        name  = "shared-volume"
+        path  = "/output"
+      }
+
+      # env vars (container specific)
+      env {
+        name  = "ARG_SF3_OR_RSF3"
+        value = each.value.card
+      }
+      env {
+        name  = "ARG_PLATFORM"
+        value = each.value.platform
+      }
+
+      # env vars (common)
+      dynamic "env" {
+        for_each = local.build_container_defaults.common_env_vars
+        content {
+          name  = env.key
+          value = env.value
+        }
+      }
+    }
+
+    volume {
+      name         = "shared-volume"
+      storage_name = azurerm_container_app_environment_storage.build.name
+      storage_type = "AzureFile"
+      mount_options = "dir_mode=0777,file_mode=0777"
+    }    
+  }
+}
 
 # New container group for the web server
 resource "azurerm_container_group" "web_server" {
@@ -170,4 +209,3 @@ resource "azurerm_dns_cname_record" "web_server" {
   ttl                 = 300
   record              = azurerm_container_group.web_server.fqdn
 }
-
