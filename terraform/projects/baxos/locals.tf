@@ -18,24 +18,12 @@ locals {
     }
 
     # Build container (container specific values)
-    build_containers = [
-        {
-            platform    = "cpc"
-            card        = "rsf3"      
-        },
-        {
-            platform    = "cpc"
-            card        = "sf3"
-        },
-        {
-            platform    = "enterprise"
-            card        = "rsf3"
-        },
-        {
-            platform    = "enterprise"
-            card        = "sf3"
-        }
-    ]
+    build_containers = {
+        "cpc-rsf3"       = { platform = "cpc",          card = "rsf3" }
+        "cpc-sf3"        = { platform = "cpc",          card = "sf3" }
+        "enterprise-rsf3"= { platform = "enterprise",   card = "rsf3" }
+        "enterprise-sf3" = { platform = "enterprise",   card = "sf3" }
+    }
 
     # Web server container config
     web_server = {

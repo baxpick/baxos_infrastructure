@@ -73,8 +73,39 @@ resource "azurerm_container_app_environment_storage" "build" {
   access_mode                  = "ReadWrite"
 }
 
+data "external" "cpc_image_ready" {
+  program = ["bash", "-c", <<-EOT
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    ACR_NAME="${azurerm_container_registry.acr.name}"
+    REPO1="cpctelera-build-cpc"
+    REPO2="cpctelera-build-enterprise"
+
+    has_latest() {
+      az acr repository show-tags \
+        --name "$ACR_NAME" \
+        --repository "$1" \
+        --query "contains(@, 'latest')" -o tsv \
+      | grep -q true
+    }
+
+    if has_latest "$REPO1" && has_latest "$REPO2"; then
+      echo '{"exists":"true"}'
+    else
+      echo '{"exists":"false"}'
+    fi
+  EOT
+  ]
+}
+
+locals {
+  jobs_enabled                = try(data.external.cpc_image_ready.result.exists, false)
+  enabled_build_containers    = local.jobs_enabled ? local.build_containers : {}
+}
+
 resource "azurerm_container_app_job" "build_jobs" {
-  for_each                     = { for idx, cfg in local.build_containers : idx => cfg }
+  for_each                     = local.enabled_build_containers
 
   name                         = "build-${each.value.platform}-${each.value.card}-${var.environment}"
   location                     = var.location
