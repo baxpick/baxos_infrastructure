@@ -7,10 +7,6 @@ on:
         description: 'Environment to deploy (dev/prod)'
         required: true
         type: string
-      environmentUppercase:
-        description: 'Environment to deploy but uppercase (DEV/PROD)'
-        required: true
-        type: string
       action:
         description: 'Action to perform (e.g., resourcesCreate, resourcesDelete)'
         required: true
