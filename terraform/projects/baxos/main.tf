@@ -50,7 +50,7 @@ resource "azurerm_storage_share" "share" {
 # ##########
 
 resource "azurerm_container_registry" "acr" {
-  name                = "acr${var.project}${var.environment}"
+  name                = "${local.acr_name}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = var.location
   sku                 = "Basic"
@@ -78,7 +78,7 @@ data "external" "cpc_image_ready" {
     #!/usr/bin/env bash
     set -euo pipefail
 
-    ACR_NAME="${azurerm_container_registry.acr.name}"
+    ACR_NAME="${local.acr_name}"
     REPO1="cpctelera-build-cpc"
     REPO2="cpctelera-build-enterprise"
 
@@ -100,6 +100,7 @@ data "external" "cpc_image_ready" {
 }
 
 locals {
+  acr_name                    = "acr${var.project}${var.environment}"
   jobs_enabled                = try(data.external.cpc_image_ready.result.exists, false)
   enabled_build_containers    = local.jobs_enabled ? local.build_containers : {}
 }
