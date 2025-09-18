@@ -113,4 +113,5 @@ jobs:
             -e ${{ inputs.environment }} \
             -a ${{ inputs.action }} \
             -p ${{ inputs.projectName }} \
+            -s refresh \
             ${{ inputs.additionalArgs }}

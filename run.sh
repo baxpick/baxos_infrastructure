@@ -36,9 +36,8 @@ usage() {
     echo "    cleanup           : Skip cleanup phase"
     echo "    init              : Skip init phase"
     echo "    validate          : Skip validate phase"
-    echo "    open              : Skip resource-open phase"
+    echo "    refresh           : Skip refresh phase"
     echo "    apply             : Skip apply phase"
-    echo "    close             : Skip resource-close phase"
     echo "  -B BEFORE_SCRIPT    : Optional script to run before main execution"
     echo "  -A AFTER_SCRIPT     : Optional script to run after main execution"
     exit 1
@@ -51,9 +50,8 @@ skip_backend="NO"
 skip_cleanup="NO"
 skip_init="NO"
 skip_validate="NO"
-skip_open="NO"
+skip_refresh="NO"
 skip_apply="NO"
-skip_close="NO"
 while getopts "e:a:p:s:B:A:h" opt; do
     case ${opt} in
         e )
@@ -88,9 +86,8 @@ if [[ -n "$skip_arg" ]]; then
       cleanup)   skip_cleanup="YES";;
       init)      skip_init="YES";;
       validate)  skip_validate="YES";;
-      open)      skip_open="YES";;
+      refresh)   skip_refresh="YES";;
       apply)     skip_apply="YES";;
-      close)     skip_close="YES";;
       *)         log_warning "Unknown skip phase: $phase";;
     esac
   done
@@ -210,6 +207,7 @@ if [[ " ${TF_ACTIONS[@]} " =~ " ${action} " ]]; then
         --skipCleanup "${skip_cleanup}" \
         --skipInit "${skip_init}" \
         --skipValidate "${skip_validate}" \
+        --skipRefresh "${skip_refresh}" \
         --skipApply "${skip_apply}" \
         --myIp "${my_ip}"
 
