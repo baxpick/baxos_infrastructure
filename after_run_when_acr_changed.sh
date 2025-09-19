@@ -98,6 +98,7 @@ run gh workflow run docker-build-push-cpc.yml --repo "${GH_REPO}" --ref main
 run gh workflow run docker-build-push-enterprise.yml --repo "${GH_REPO}" --ref main
 
 # Azure DevOps : set secret pipeline variables
+export AZURE_DEVOPS_EXT_PAT="${AZDO_TOKEN}"
 azdo_login --pat "${AZDO_TOKEN}" --organization "${AZDO_PIPELINE_ORGANIZATION}" --project "${AZDO_PIPELINE_PROJECT}"
 PIPELINE_ID=$(az pipelines show --name "${AZDO_PIPELINE_NAME}" --query id -o tsv)
 [[ -n "${PIPELINE_ID}" ]] || { log_error "Could not resolve pipeline ID"; exit 1; }
