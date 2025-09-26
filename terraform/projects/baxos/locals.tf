@@ -29,8 +29,8 @@ locals {
     web_server = {
         name  = "web-server"
         image = "mcr.microsoft.com/azurelinux/base/nginx:1" 
-        cpu   = "1.0"
-        memory= "2.0"
+        cpu   = "0.5"
+        memory= "1.0"
         port  = 80
     }
 }
