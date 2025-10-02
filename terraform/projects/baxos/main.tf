@@ -46,6 +46,19 @@ resource "azurerm_storage_share" "share" {
   enabled_protocol        = "SMB"
 }
 
+# Upload static files from files/ludic to the share
+locals {
+  static_files = fileset("${path.module}/files/ludic", "**")
+}
+
+resource "azurerm_storage_share_file" "static_files" {
+  for_each = local.static_files
+  
+  name             = each.value
+  storage_share_id = "https://${azurerm_storage_account.storage.name}.file.core.windows.net/${azurerm_storage_share.share.name}"
+  source           = "${path.module}/files/ludic/${each.value}"
+}
+
 # Containers
 # ##########
 
