@@ -57,6 +57,7 @@ resource "azurerm_storage_share_file" "static_files" {
   name             = each.value
   storage_share_id = "https://${azurerm_storage_account.storage.name}.file.core.windows.net/${azurerm_storage_share.share.name}"
   source           = "${path.module}/files/ludic/${each.value}"
+  content_md5      = filemd5("${path.module}/files/ludic/${each.value}")
 }
 
 # Containers
