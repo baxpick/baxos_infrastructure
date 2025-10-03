@@ -3,11 +3,16 @@
 	
 	"dockerFile": "Dockerfile.ubuntu",
 	
+	// needed for "mount -t cifs"
+	"runArgs": ["--cap-add=SYS_ADMIN", "--privileged"],
+	
 	"containerEnv": {
 		"FOLDER_ROOT": "${containerWorkspaceFolder}"
 	},
 	
-	"postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && git submodule sync && git submodule update --init --recursive",
+	"onCreateCommand": "git config --global --add safe.directory '*'",
+	
+	"postCreateCommand": "git submodule sync && git submodule update --init --recursive",
 	
 	"postStartCommand": "./.devcontainer/startup.sh prod",
 

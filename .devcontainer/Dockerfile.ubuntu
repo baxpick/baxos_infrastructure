@@ -41,4 +41,5 @@ RUN apt update && apt install -y gh
 
 # other
 RUN apt update && apt install -y \
-    git jq
+    git jq \
+    cifs-utils
