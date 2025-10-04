@@ -71,27 +71,27 @@ fi
 # MOUNT AZURE FILE SHARE
 # ######################
 
-if  [ -n "${MOUNT_FILE_SHARE_SANAME}" ] && \
-    [ -n "${MOUNT_FILE_SHARE_NAME}" ] && \
-    [ -n "${MOUNT_FILE_SHARE_RG}" ] && \
-    [ -n "${MOUNT_FILE_SHARE_FOLDER}" ]; then
+if  [ -n "${BAXOS_FILE_SHARE_SANAME}" ] && \
+    [ -n "${BAXOS_FILE_SHARE_NAME}" ] && \
+    [ -n "${BAXOS_FILE_SHARE_RG}" ] && \
+    [ -n "${BAXOS_FILE_SHARE_FOLDER}" ]; then
         
     echo "[MOUNT AZURE FILE SHARE] 🔐 Getting storage account key..."
-    MOUNT_FILE_SHARE_SA_KEY=$(az storage account keys list \
-    --account-name "${MOUNT_FILE_SHARE_SANAME}" \
-    --resource-group "${MOUNT_FILE_SHARE_RG}" \
+    BAXOS_FILE_SHARE_SA_KEY=$(az storage account keys list \
+    --account-name "${BAXOS_FILE_SHARE_SANAME}" \
+    --resource-group "${BAXOS_FILE_SHARE_RG}" \
     --query "[0].value" \
     --output tsv)
-    [ -n "${MOUNT_FILE_SHARE_SA_KEY}" ] || { echo "❌ Failed to get storage key"; exit 1; }
+    [ -n "${BAXOS_FILE_SHARE_SA_KEY}" ] || { echo "❌ Failed to get storage key"; exit 1; }
 
-    echo "[MOUNT AZURE FILE SHARE] 📁 Creating mount point at ${MOUNT_FILE_SHARE_FOLDER}..."
-    mkdir -p "${MOUNT_FILE_SHARE_FOLDER}" || true
+    echo "[MOUNT AZURE FILE SHARE] 📁 Creating mount point at ${BAXOS_FILE_SHARE_FOLDER}..."
+    mkdir -p "${BAXOS_FILE_SHARE_FOLDER}" || true
 
     echo "[MOUNT AZURE FILE SHARE] 🔗 Mounting Azure File Share..."
     mount -t cifs \
-        "//${MOUNT_FILE_SHARE_SANAME}.file.core.windows.net/${MOUNT_FILE_SHARE_NAME}" \
-        "${MOUNT_FILE_SHARE_FOLDER}" \
-        -o "username=${MOUNT_FILE_SHARE_SANAME},password=${MOUNT_FILE_SHARE_SA_KEY},dir_mode=0777,file_mode=0777,vers=3.0,noperm,mfsymlinks,serverino,nosharesock,actimeo=30,cache=strict"
+        "//${BAXOS_FILE_SHARE_SANAME}.file.core.windows.net/${BAXOS_FILE_SHARE_NAME}" \
+        "${BAXOS_FILE_SHARE_FOLDER}" \
+        -o "username=${BAXOS_FILE_SHARE_SANAME},password=${BAXOS_FILE_SHARE_SA_KEY},dir_mode=0777,file_mode=0777,vers=3.0,noperm,mfsymlinks,serverino,nosharesock,actimeo=30,cache=strict"
     [ $? -eq 0 ] || { echo "❌ Failed to mount Azure File Share"; exit 1; }
 else
     echo "[MOUNT AZURE FILE SHARE] Missing required variables. Mounting skipped."
