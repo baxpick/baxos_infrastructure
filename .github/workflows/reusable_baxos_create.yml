@@ -108,6 +108,11 @@ jobs:
           AZDO_PIPELINE_ORGANIZATION: ${{ secrets.AZDO_PIPELINE_ORGANIZATION }}
           AZDO_PIPELINE_PROJECT: ${{ secrets.AZDO_PIPELINE_PROJECT }}
           AZDO_PIPELINE_NAME: ${{ secrets.AZDO_PIPELINE_NAME }}
+
+          BAXOS_FILE_SHARE_SANAME: "sa${{ inputs.projectName }}build${{ inputs.environment }}"
+          BAXOS_FILE_SHARE_NAME: "share${{ inputs.projectName }}build${{ inputs.environment }}"
+          BAXOS_FILE_SHARE_RG: "${{ inputs.projectName }}-${{ inputs.environment }}-all-rg"
+
         run: |
           ./run.sh \
             -e ${{ inputs.environment }} \

@@ -44,8 +44,7 @@ log_title "Upload website files"
 
 if  [ -n "${BAXOS_FILE_SHARE_SANAME}" ] && \
     [ -n "${BAXOS_FILE_SHARE_NAME}" ] && \
-    [ -n "${BAXOS_FILE_SHARE_RG}" ] && \
-    [ -n "${BAXOS_FILE_SHARE_FOLDER}" ]; then
+    [ -n "${BAXOS_FILE_SHARE_RG}" ]; then
 
     cd "${TERRAFORM_DIR}"
 
