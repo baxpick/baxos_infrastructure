@@ -19,8 +19,7 @@
 	"customizations": {
 		"vscode": {
 		  "extensions": [
-			"hashicorp.terraform",
-			"Azurite.azurite"
+			"hashicorp.terraform"
 		],
 		  "settings": {
 			"scm.autoDetectGitRepositories": "subFolders"

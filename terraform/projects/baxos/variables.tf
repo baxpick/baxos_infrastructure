@@ -71,6 +71,22 @@ variable "my_ip" {
 # set from environment using TF_VAR_... syntax
 # ############################################
 
+# Shared resources
+# ----------------
+
+variable "shared_rg" {
+  description = "Resource group containing the shared resources"
+  type        = string
+}
+
+variable "shared_dns_zone_name" {
+  description = "Name of the shared DNS zone"
+  type        = string
+}
+
+# Other
+# -----
+
 # REMARK: this secret variable can also be set in codespaces secrets so it must be uppercase
 variable "BAXOS_SRC_PROJECT_GIT_REPO" {
   description = "baxos source git repo with credentials"
