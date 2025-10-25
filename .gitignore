@@ -25,6 +25,16 @@
 
 **/key
 
+# Certificate files (DO NOT COMMIT)
+# ##################################
+
+.certs/
+**/*.pem
+**/*.key
+**/*.crt
+**/*.p12
+**/*.pfx
+
 # temps
 # #####
 

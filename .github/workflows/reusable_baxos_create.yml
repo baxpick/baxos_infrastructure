@@ -23,7 +23,7 @@ on:
     secrets:
       ARM_CLIENT_ID:
         required: true
-      ARM_CLIENT_SECRET:
+      ARM_CLIENT_CERT_BASE64:
         required: true
       ARM_TENANT_ID:
         required: true
@@ -61,6 +61,12 @@ jobs:
         with:
           submodules: 'recursive'
 
+      - name: Prepare Azure certificate
+        run: |
+          mkdir -p .certs
+          echo "${{ secrets.ARM_CLIENT_CERT_BASE64 }}" |base64 -d >.certs/azure-sp.pem
+          chmod 600 .certs/azure-sp.pem
+
       # - name: Install dependencies
       #   run: |
       #     sudo apt-get update
@@ -91,7 +97,7 @@ jobs:
           FOLDER_ROOT: ${{ github.workspace }}
           LOG_VERBOSE: $${{ vars.LOG_VERBOSE }}
           ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_CLIENT_CERT_PATH: ${{ github.workspace }}/.certs/azure-sp.pem
           ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

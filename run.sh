@@ -126,7 +126,7 @@ log_info "skip='${skip_arg}'"
 log_title "SANITY"
 # ################
 
-azure_login --clientId ${ARM_CLIENT_ID} --clientSecret ${ARM_CLIENT_SECRET} --tenantId ${ARM_TENANT_ID}
+azure_login --clientId ${ARM_CLIENT_ID} --clientCertPath ${ARM_CLIENT_CERT_PATH} --tenantId ${ARM_TENANT_ID}
 aws_login --accessKeyId ${AWS_ACCESS_KEY_ID} --secretAccessKey ${AWS_SECRET_ACCESS_KEY} --defaultRegion ${AWS_DEFAULT_REGION}
 
 log_info "subscription..."

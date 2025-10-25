@@ -67,7 +67,7 @@ log_info "AZDO_PIPELINE_NAME='***'"
 log_subtitle "SANITY"
 # ###################
 
-azure_login --clientId ${ARM_CLIENT_ID} --clientSecret ${ARM_CLIENT_SECRET} --tenantId ${ARM_TENANT_ID}
+azure_login --clientId ${ARM_CLIENT_ID} --clientCertPath ${ARM_CLIENT_CERT_PATH} --tenantId ${ARM_TENANT_ID}
 
 log_subtitle "Prepare variables"
 # ##############################

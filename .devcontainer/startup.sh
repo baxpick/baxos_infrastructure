@@ -27,12 +27,15 @@ fi
 # ###########
 
 if  [ -n "${ARM_CLIENT_ID}" ] && \
-    [ -n "${ARM_CLIENT_SECRET}" ] && \
+    [ -n "${ARM_CLIENT_CERT_PATH}" ] && \
     [ -n "${ARM_TENANT_ID}" ] && \
     [ -n "${ARM_SUBSCRIPTION_ID}" ]; then
     
     if command -v az >/dev/null; then
-        if az login --service-principal -u ${ARM_CLIENT_ID} -p ${ARM_CLIENT_SECRET} --tenant ${ARM_TENANT_ID}; then
+        if az login --service-principal \
+                    --username ${ARM_CLIENT_ID} \
+                    --certificate ${ARM_CLIENT_CERT_PATH} \
+                    --tenant ${ARM_TENANT_ID} >/dev/null 2>&1 ; then
             echo "[AZURE LOGIN] Azure CLI login successful."
         else
             echo "[AZURE LOGIN] Azure CLI login failed."
