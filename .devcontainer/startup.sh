@@ -28,14 +28,22 @@ fi
 
 if  [ -n "${ARM_CLIENT_ID}" ] && \
     [ -n "${ARM_CLIENT_CERT_PATH}" ] && \
+    [ -n "${ARM_CLIENT_CERT_BASE64}" ] && \
     [ -n "${ARM_TENANT_ID}" ] && \
     [ -n "${ARM_SUBSCRIPTION_ID}" ]; then
     
     if command -v az >/dev/null; then
+
+        mkdir -p "$(dirname "${ARM_CLIENT_CERT_PATH}")" >/dev/null 2>&1 || true
+
+        echo "${ARM_CLIENT_CERT_BASE64}" |base64 -d >"${ARM_CLIENT_CERT_PATH}"
+        chmod 600 "${ARM_CLIENT_CERT_PATH}"
+
         if az login --service-principal \
-                    --username ${ARM_CLIENT_ID} \
-                    --certificate ${ARM_CLIENT_CERT_PATH} \
-                    --tenant ${ARM_TENANT_ID} >/dev/null 2>&1 ; then
+            --username ${ARM_CLIENT_ID} \
+            --certificate "${ARM_CLIENT_CERT_PATH}" \
+            --tenant ${ARM_TENANT_ID} >/dev/null 2>&1; then
+
             echo "[AZURE LOGIN] Azure CLI login successful."
         else
             echo "[AZURE LOGIN] Azure CLI login failed."
