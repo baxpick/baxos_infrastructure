@@ -61,12 +61,6 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Prepare Azure certificate
-        run: |
-          mkdir -p .certs
-          echo "${{ secrets.ARM_CLIENT_CERT_BASE64 }}" |base64 -d >.certs/azure-sp.pem
-          chmod 600 .certs/azure-sp.pem
-
       # - name: Install dependencies
       #   run: |
       #     sudo apt-get update
@@ -120,7 +114,7 @@ jobs:
           BAXOS_FILE_SHARE_RG: "${{ inputs.projectName }}-${{ inputs.environment }}-all-rg"
 
         run: |
-          ./run.sh \
+          ./bash/run.sh \
             -e ${{ inputs.environment }} \
             -a ${{ inputs.action }} \
             -p ${{ inputs.projectName }} \

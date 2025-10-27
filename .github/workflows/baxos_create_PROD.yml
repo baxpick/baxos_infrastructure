@@ -8,7 +8,6 @@ on:
       - 'terraform/projects/baxos/**'
       - '.github/workflows/baxos_create_PROD.yml'
       - '.github/workflows/reusable_baxos_create.yml'
-      - 'run.sh'
       - 'after_run.sh'
       - 'after_run_when_acr_changed.sh'
   schedule:
@@ -22,7 +21,7 @@ jobs:
       environment: prod
       action: resourcesCreate
       projectName: baxos
-      additionalArgs: "-A ./after_run.sh"
+      additionalArgs: "-A ../after_run.sh"
     secrets:
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID_PROD }}
       ARM_CLIENT_CERT_BASE64: ${{ secrets.ARM_CLIENT_CERT_BASE64_PROD }}
