@@ -21,7 +21,7 @@ jobs:
       environment: prod
       action: resourcesCreate
       projectName: baxos
-      additionalArgs: "-A ${{ github.workspace }}/after_run.sh"
+      additionalArgs: "-A ${GITHUB_WORKSPACE}/after_run.sh"
     secrets:
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID_PROD }}
       ARM_CLIENT_CERT_BASE64: ${{ secrets.ARM_CLIENT_CERT_BASE64_PROD }}
