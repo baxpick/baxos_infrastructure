@@ -90,6 +90,7 @@ jobs:
         env:
           FOLDER_ROOT: ${{ github.workspace }}
           LOG_VERBOSE: $${{ vars.LOG_VERBOSE }}
+          IAAC_TOOL: terraform
           ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
           ARM_CLIENT_CERT_PATH: ${{ github.workspace }}/.certs/azure-sp.pem
           ARM_CLIENT_CERT_BASE64: ${{ secrets.ARM_CLIENT_CERT_BASE64 }}
